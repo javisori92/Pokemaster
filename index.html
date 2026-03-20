@@ -3097,6 +3097,11 @@ function updateTimeDisplay() {
 }
 
 // ══════════════════════════════════════════════
+//  GHOST-TAP GUARD
+// Tracks when the last question was rendered to block accidental
+// touch-through clicks that arrive right after pressing "Siguiente".
+let _qRenderedAt = 0;
+
 //  EXAM ENGINE
 // ══════════════════════════════════════════════
 let examQuestions = [];
@@ -3335,9 +3340,12 @@ function renderExamQuestion() {
     btnNext.style.display = '';
     btnFinish.style.display = 'none';
   }
+  _qRenderedAt = Date.now();
 }
 
 function selectAnswer(i) {
+  // Ignore ghost taps that arrive right after pressing "Siguiente"
+  if (Date.now() - _qRenderedAt < 350) return;
   const prev = examAnswers[examIndex];
   // Clicking the already-selected answer → deselect (set to null = blank)
   if (prev === i) {
@@ -3816,10 +3824,13 @@ function renderStudyQuestion() {
   DOM['study-feedback'].className = 'study-feedback';
   DOM['study-feedback'].textContent = '';
   DOM['study-next-btn'].style.display = 'none';
+  _qRenderedAt = Date.now();
 }
 
 function studyAnswer(i) {
   if (studyAnswered) return;
+  // Ignore ghost taps that arrive right after pressing "Siguiente"
+  if (Date.now() - _qRenderedAt < 350) return;
   studyAnswered = true;
 
   // Immediately disable all answer options to prevent double-click ghost taps
@@ -6113,9 +6124,12 @@ function renderChallengeQuestion() {
     wrap.appendChild(el);
   });
   if (challengeMode === 'extremo') startExtremoPerQTimer();
+  _qRenderedAt = Date.now();
 }
 
 function challengeAnswer(i) {
+  // Ignore ghost taps that arrive right after the previous answer rendered this question
+  if (Date.now() - _qRenderedAt < 350) return;
   const q = challengeQueue[challengeIndex];
   const opts = document.querySelectorAll('#challenge-answers .answer-opt');
   opts.forEach(o => o.onclick = null);
