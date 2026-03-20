@@ -2051,7 +2051,7 @@
     </div>
     <div class="input-group">
       <label>Subcategoría <span style="color:var(--text3);font-weight:400;">(opcional)</span></label>
-      <input type="text" id="import-text-subcat" placeholder="Ej: Tema 1, Capítulo 3…" list="import-subcat-datalist" maxlength="80">
+      <input type="text" id="import-text-subcat" placeholder="Escribe una subcategoría…" list="import-subcat-datalist" maxlength="80">
       <datalist id="import-subcat-datalist"></datalist>
     </div>
     <div class="input-group">
@@ -6777,9 +6777,16 @@ function setupImportTextPreview() {
     const preview = DOM['import-text-preview'] || document.getElementById('import-text-preview');
     if (!preview) return;
     const parsed = parseQuestionsFromText(ta.value, cat, subcat);
-    preview.textContent = parsed.length > 0
-      ? `✓ ${parsed.length} pregunta${parsed.length===1?'':'s'} detectada${parsed.length===1?'':'s'}`
-      : ta.value.length > 20 ? '⚠️ No se detectan preguntas aún. Revisa el formato.' : '';
+    const existing = new Set(db.questions.map(q => q.question.toLowerCase().trim()));
+    const toAdd = parsed.filter(q => !existing.has(q.question.toLowerCase().trim()));
+    const dupes = parsed.length - toAdd.length;
+    if (parsed.length > 0) {
+      let msg = `✓ ${toAdd.length} pregunta${toAdd.length===1?'':'s'} detectada${toAdd.length===1?'':'s'}`;
+      if (dupes > 0) msg += ` (${dupes} duplicada${dupes===1?'':'s'} omitida${dupes===1?'':'s'})`;
+      preview.textContent = msg;
+    } else {
+      preview.textContent = ta.value.length > 20 ? '⚠️ No se detectan preguntas aún. Revisa el formato.' : '';
+    }
     preview.style.color = parsed.length > 0 ? 'var(--success)' : 'var(--warning)';
   });
 }
