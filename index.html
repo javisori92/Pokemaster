@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -13,12 +13,12 @@
 <meta name="description" content="Tu app de trivia Pokémon">
 
 <!-- Manifest (inline for single-file deployment) -->
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkFwcmVuZGl4IiwgInNob3J0X25hbWUiOiAiQXByZW5kaXgiLCAiZGVzY3JpcHRpb24iOiAiVHUgYXBwIGRlIGVzdHVkaW8geSBleMOhbWVuZXMiLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGEwZiIsICJ0aGVtZV9jb2xvciI6ICIjN2M2ZWZmIiwgImxhbmciOiAiZXMiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNEtJQ0E4WkdWbWN6NEtJQ0FnSUR4c2FXNWxZWEpIY21Ga2FXVnVkQ0JwWkQwaVltY2lJSGd4UFNJd0pTSWdlVEU5SWpBbElpQjRNajBpTVRBd0pTSWdlVEk5SWpFd01DVWlQZ29nSUNBZ0lDQThjM1J2Y0NCdlptWnpaWFE5SWpBbElpQnpkSGxzWlQwaWMzUnZjQzFqYjJ4dmNqb2pOMk0yWldabUlpOCtDaUFnSUNBZ0lEeHpkRzl3SUc5bVpuTmxkRDBpTVRBd0pTSWdjM1I1YkdVOUluTjBiM0F0WTI5c2IzSTZJelpsWm1aaU9DSXZQZ29nSUNBZ1BDOXNhVzVsWVhKSGNtRmthV1Z1ZEQ0S0lDQWdJRHhzYVc1bFlYSkhjbUZrYVdWdWRDQnBaRDBpZEhoMElpQjRNVDBpTUNVaUlIa3hQU0l3SlNJZ2VESTlJakV3TUNVaUlIa3lQU0l4TURBbElqNEtJQ0FnSUNBZ1BITjBiM0FnYjJabWMyVjBQU0l3SlNJZ2MzUjViR1U5SW5OMGIzQXRZMjlzYjNJNkkyWm1abVptWmlJdlBnb2dJQ0FnSUNBOGMzUnZjQ0J2Wm1aelpYUTlJakV3TUNVaUlITjBlV3hsUFNKemRHOXdMV052Ykc5eU9pTmxNR1E0Wm1ZaUx6NEtJQ0FnSUR3dmJHbHVaV0Z5UjNKaFpHbGxiblErQ2lBZ1BDOWtaV1p6UGdvZ0lEeHlaV04wSUhkcFpIUm9QU0kxTVRJaUlHaGxhV2RvZEQwaU5URXlJaUJ5ZUQwaU1URXlJaUJtYVd4c1BTSjFjbXdvSTJKbktTSXZQZ29nSUR4MFpYaDBJSGc5SWpJMU5pSWdlVDBpTXpBd0lpQm1iMjUwTFdaaGJXbHNlVDBpUjJWdmNtZHBZU3h6WlhKcFppSWdabTl1ZEMxemFYcGxQU0l5TmpBaUlHWnZiblF0ZDJWcFoyaDBQU0ppYjJ4a0lnb2dJQ0FnZEdWNGRDMWhibU5vYjNJOUltMXBaR1JzWlNJZ1ptbHNiRDBpZFhKc0tDTjBlSFFwSWo1QlBDOTBaWGgwUGdvZ0lEeGphWEpqYkdVZ1kzZzlJak00TUNJZ1kzazlJakUwTUNJZ2NqMGlORGdpSUdacGJHdzlJbkpuWW1Fb01qVTFMREkxTlN3eU5UVXNNQzR4TlNraUx6NEtJQ0E4ZEdWNGRDQjRQU0l6T0RBaUlIazlJakUxTlNJZ1ptOXVkQzFtWVcxcGJIazlJa2RsYjNKbmFXRXNjMlZ5YVdZaUlHWnZiblF0YzJsNlpUMGlOREFpSUdadmJuUXRkMlZwWjJoMFBTSmliMnhrSWdvZ0lDQWdkR1Y0ZEMxaGJtTm9iM0k5SW0xcFpHUnNaU0lnWm1sc2JEMGlkMmhwZEdVaVBpczhMM1JsZUhRK0Nqd3ZjM1puUGc9PSIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSJ9LCB7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWo0S0lDQThaR1ZtY3o0S0lDQWdJRHhzYVc1bFlYSkhjbUZrYVdWdWRDQnBaRDBpWW1jaUlIZ3hQU0l3SlNJZ2VURTlJakFsSWlCNE1qMGlNVEF3SlNJZ2VUSTlJakV3TUNVaVBnb2dJQ0FnSUNBOGMzUnZjQ0J2Wm1aelpYUTlJakFsSWlCemRIbHNaVDBpYzNSdmNDMWpiMnh2Y2pvak4yTTJaV1ptSWk4K0NpQWdJQ0FnSUR4emRHOXdJRzltWm5ObGREMGlNVEF3SlNJZ2MzUjViR1U5SW5OMGIzQXRZMjlzYjNJNkl6WmxabVppT0NJdlBnb2dJQ0FnUEM5c2FXNWxZWEpIY21Ga2FXVnVkRDRLSUNBZ0lEeHNhVzVsWVhKSGNtRmthV1Z1ZENCcFpEMGlkSGgwSWlCNE1UMGlNQ1VpSUhreFBTSXdKU0lnZURJOUlqRXdNQ1VpSUhreVBTSXhNREFsSWo0S0lDQWdJQ0FnUEhOMGIzQWdiMlptYzJWMFBTSXdKU0lnYzNSNWJHVTlJbk4wYjNBdFkyOXNiM0k2STJabVptWm1aaUl2UGdvZ0lDQWdJQ0E4YzNSdmNDQnZabVp6WlhROUlqRXdNQ1VpSUhOMGVXeGxQU0p6ZEc5d0xXTnZiRzl5T2lObE1HUTRabVlpTHo0S0lDQWdJRHd2YkdsdVpXRnlSM0poWkdsbGJuUStDaUFnUEM5a1pXWnpQZ29nSUR4eVpXTjBJSGRwWkhSb1BTSTFNVElpSUdobGFXZG9kRDBpTlRFeUlpQnllRDBpTVRFeUlpQm1hV3hzUFNKMWNtd29JMkpuS1NJdlBnb2dJRHgwWlhoMElIZzlJakkxTmlJZ2VUMGlNekF3SWlCbWIyNTBMV1poYldsc2VUMGlSMlZ2Y21kcFlTeHpaWEpwWmlJZ1ptOXVkQzF6YVhwbFBTSXlOakFpSUdadmJuUXRkMlZwWjJoMFBTSmliMnhrSWdvZ0lDQWdkR1Y0ZEMxaGJtTm9iM0k5SW0xcFpHUnNaU0lnWm1sc2JEMGlkWEpzS0NOMGVIUXBJajVCUEM5MFpYaDBQZ29nSUR4amFYSmpiR1VnWTNnOUlqTTRNQ0lnWTNrOUlqRTBNQ0lnY2owaU5EZ2lJR1pwYkd3OUluSm5ZbUVvTWpVMUxESTFOU3d5TlRVc01DNHhOU2tpTHo0S0lDQThkR1Y0ZENCNFBTSXpPREFpSUhrOUlqRTFOU0lnWm05dWRDMW1ZVzFwYkhrOUlrZGxiM0puYVdFc2MyVnlhV1lpSUdadmJuUXRjMmw2WlQwaU5EQWlJR1p2Ym5RdGQyVnBaMmgwUFNKaWIyeGtJZ29nSUNBZ2RHVjRkQzFoYm1Ob2IzSTlJbTFwWkdSc1pTSWdabWxzYkQwaWQyaHBkR1VpUGlzOEwzUmxlSFErQ2p3dmMzWm5QZz09IiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwgInB1cnBvc2UiOiAiYW55In1dLCAiY2F0ZWdvcmllcyI6IFsiZWR1Y2F0aW9uIl0sICJzaG9ydGN1dHMiOiBbeyJuYW1lIjogIkV4YW1lbiByZWFsIiwgInVybCI6ICIuIiwgImRlc2NyaXB0aW9uIjogIkluaWNpYXIgZXhhbWVuIHJlYWwifSwgeyJuYW1lIjogIk1vZG8gZXN0dWRpbyIsICJ1cmwiOiAiLiIsICJkZXNjcmlwdGlvbiI6ICJJbmljaWFyIG1vZG8gZXN0dWRpbyJ9XX0=">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUG9rw6lNYXN0ZXIiLCJzaG9ydF9uYW1lIjoiUG9rw6lNYXN0ZXIiLCJkZXNjcmlwdGlvbiI6IlR1IGFwcCBkZSB0cml2aWEgUG9rw6ltb24iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJvcmllbnRhdGlvbiI6InBvcnRyYWl0IiwiYmFja2dyb3VuZF9jb2xvciI6IiMxYTA1MDUiLCJ0aGVtZV9jb2xvciI6IiNlZTE1MTUiLCJsYW5nIjoiZXMiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNDhaR1ZtY3o0OFkyeHBjRkJoZEdnZ2FXUTlJbU1pUGp4amFYSmpiR1VnWTNnOUlqSTFOaUlnWTNrOUlqSTFOaUlnY2owaU1qRXdJaTgrUEM5amJHbHdVR0YwYUQ0OEwyUmxabk0rUEhKbFkzUWdkMmxrZEdnOUlqVXhNaUlnYUdWcFoyaDBQU0kxTVRJaUlHWnBiR3c5SWlNeFlUQTFNRFVpTHo0OFkybHlZMnhsSUdONFBTSXlOVFlpSUdONVBTSXlOVFlpSUhJOUlqSXhNQ0lnWm1sc2JEMGlJMlptWmlJdlBqeHdZWFJvSUdROUlrMDBOaXd5TlRaaE1qRXdMREl4TUN3d0xEQXNNQ3cwTWpBc01Ib2lJR1pwYkd3OUlpTmxaVEUxTVRVaUx6NDhjbVZqZENCNFBTSTBOaUlnZVQwaU1qUXdJaUIzYVdSMGFEMGlOREl3SWlCb1pXbG5hSFE5SWpNeUlpQm1hV3hzUFNJak1URXhJaUJqYkdsd0xYQmhkR2c5SW5WeWJDZ2pZeWtpTHo0OFkybHlZMnhsSUdONFBTSXlOVFlpSUdONVBTSXlOVFlpSUhJOUlqVXlJaUJtYVd4c1BTSWpNVEV4SWk4K1BHTnBjbU5zWlNCamVEMGlNalUySWlCamVUMGlNalUySWlCeVBTSXpOQ0lnWm1sc2JEMGlJMlptWmlJdlBqeGphWEpqYkdVZ1kzZzlJakkxTmlJZ1kzazlJakkxTmlJZ2NqMGlNakV3SWlCbWFXeHNQU0p1YjI1bElpQnpkSEp2YTJVOUlpTXhNVEVpSUhOMGNtOXJaUzEzYVdSMGFEMGlNVGdpTHo0OEwzTjJaejQ9Iiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn0seyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWo0OFpHVm1jejQ4WTJ4cGNGQmhkR2dnYVdROUltTWlQanhqYVhKamJHVWdZM2c5SWpJMU5pSWdZM2s5SWpJMU5pSWdjajBpTWpFd0lpOCtQQzlqYkdsd1VHRjBhRDQ4TDJSbFpuTStQSEpsWTNRZ2QybGtkR2c5SWpVeE1pSWdhR1ZwWjJoMFBTSTFNVElpSUdacGJHdzlJaU14WVRBMU1EVWlMejQ4WTJseVkyeGxJR040UFNJeU5UWWlJR041UFNJeU5UWWlJSEk5SWpJeE1DSWdabWxzYkQwaUkyWm1aaUl2UGp4d1lYUm9JR1E5SWswME5pd3lOVFpoTWpFd0xESXhNQ3d3TERBc01DdzBNakFzTUhvaUlHWnBiR3c5SWlObFpURTFNVFVpTHo0OGNtVmpkQ0I0UFNJME5pSWdlVDBpTWpRd0lpQjNhV1IwYUQwaU5ESXdJaUJvWldsbmFIUTlJak15SWlCbWFXeHNQU0lqTVRFeElpQmpiR2x3TFhCaGRHZzlJblZ5YkNnall5a2lMejQ4WTJseVkyeGxJR040UFNJeU5UWWlJR041UFNJeU5UWWlJSEk5SWpVeUlpQm1hV3hzUFNJak1URXhJaTgrUEdOcGNtTnNaU0JqZUQwaU1qVTJJaUJqZVQwaU1qVTJJaUJ5UFNJek5DSWdabWxzYkQwaUkyWm1aaUl2UGp4amFYSmpiR1VnWTNnOUlqSTFOaUlnWTNrOUlqSTFOaUlnY2owaU1qRXdJaUJtYVd4c1BTSnViMjVsSWlCemRISnZhMlU5SWlNeE1URWlJSE4wY205clpTMTNhV1IwYUQwaU1UZ2lMejQ4TDNOMlp6ND0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkifV0sImNhdGVnb3JpZXMiOlsiZ2FtZXMiLCJlbnRlcnRhaW5tZW50Il19">
 
 <!-- iOS icons (inline SVG as data URI) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZmY2IwNSIvPjxyZWN0IHg9IjEwNiIgeT0iOTYiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzIwIiByeD0iMzAiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjEwNiIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNDAiIHJ4PSIyMCIgZmlsbD0iI2VlMTUxNSIvPjxyZWN0IHg9IjEwNiIgeT0iMjQ2IiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjI1NCIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNTIiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE2MCIgcj0iNTAiIGZpbGw9IiNjYzAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMTYwIiByPSI0NSIgZmlsbD0iI2ZmMzMzMyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiLz48bGluZSB4MT0iMjIwIiB5MT0iMTYwIiB4Mj0iMjkyIiB5Mj0iMTYwIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE1NiIgY3k9IjMxMCIgcj0iMTIiIGZpbGw9IiNmZmNiMDUiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIzMTAiIHI9IjEyIiBmaWxsPSIjZmZjYjA1IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMzU2IiBjeT0iMzEwIiByPSIxMiIgZmlsbD0iI2ZmY2IwNSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIyMDAiIHJ4PSI2MCIgcnk9IjgwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiLz48L3N2Zz4=">
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZmY2IwNSIvPjxyZWN0IHg9IjEwNiIgeT0iOTYiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzIwIiByeD0iMzAiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjEwNiIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNDAiIHJ4PSIyMCIgZmlsbD0iI2VlMTUxNSIvPjxyZWN0IHg9IjEwNiIgeT0iMjQ2IiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjI1NCIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNTIiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE2MCIgcj0iNTAiIGZpbGw9IiNjYzAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMTYwIiByPSI0NSIgZmlsbD0iI2ZmMzMzMyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiLz48bGluZSB4MT0iMjIwIiB5MT0iMTYwIiB4Mj0iMjkyIiB5Mj0iMTYwIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE1NiIgY3k9IjMxMCIgcj0iMTIiIGZpbGw9IiNmZmNiMDUiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIzMTAiIHI9IjEyIiBmaWxsPSIjZmZjYjA1IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMzU2IiBjeT0iMzEwIiByPSIxMiIgZmlsbD0iI2ZmY2IwNSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIyMDAiIHJ4PSI2MCIgcnk9IjgwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiLz48L3N2Zz4=">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZmY2IwNSIvPjxyZWN0IHg9IjEwNiIgeT0iOTYiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzIwIiByeD0iMzAiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjEwNiIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNDAiIHJ4PSIyMCIgZmlsbD0iI2VlMTUxNSIvPjxyZWN0IHg9IjEwNiIgeT0iMjQ2IiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDAwMDAiLz48cmVjdCB4PSIxMTYiIHk9IjI1NCIgd2lkdGg9IjI4MCIgaGVpZ2h0PSIxNTIiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE2MCIgcj0iNTAiIGZpbGw9IiNjYzAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMTYwIiByPSI0NSIgZmlsbD0iI2ZmMzMzMyIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiLz48bGluZSB4MT0iMjIwIiB5MT0iMTYwIiB4Mj0iMjkyIiB5Mj0iMTYwIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE1NiIgY3k9IjMxMCIgcj0iMTIiIGZpbGw9IiNmZmNiMDUiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIzMTAiIHI9IjEyIiBmaWxsPSIjZmZjYjA1IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMzU2IiBjeT0iMzEwIiByPSIxMiIgZmlsbD0iI2ZmY2IwNSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxlbGxpcHNlIGN4PSIyMDAiIGN5PSIyMDAiIHJ4PSI2MCIgcnk9IjgwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiLz48L3N2Zz4=">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48Y2xpcFBhdGggaWQ9ImMiPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMxYTA1MDUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik00NiwyNTZhMjEwLDIxMCwwLDAsMCw0MjAsMHoiIGZpbGw9IiNlZTE1MTUiLz48cmVjdCB4PSI0NiIgeT0iMjQwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMTExIiBjbGlwLXBhdGg9InVybCgjYykiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjUyIiBmaWxsPSIjMTExIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIzNCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iMTgiLz48L3N2Zz4=">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48Y2xpcFBhdGggaWQ9ImMiPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMxYTA1MDUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik00NiwyNTZhMjEwLDIxMCwwLDAsMCw0MjAsMHoiIGZpbGw9IiNlZTE1MTUiLz48cmVjdCB4PSI0NiIgeT0iMjQwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMTExIiBjbGlwLXBhdGg9InVybCgjYykiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjUyIiBmaWxsPSIjMTExIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIzNCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iMTgiLz48L3N2Zz4=">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48Y2xpcFBhdGggaWQ9ImMiPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIi8+PC9jbGlwUGF0aD48L2RlZnM+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMxYTA1MDUiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik00NiwyNTZhMjEwLDIxMCwwLDAsMCw0MjAsMHoiIGZpbGw9IiNlZTE1MTUiLz48cmVjdCB4PSI0NiIgeT0iMjQwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMTExIiBjbGlwLXBhdGg9InVybCgjYykiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjUyIiBmaWxsPSIjMTExIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIzNCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iMTgiLz48L3N2Zz4=">
 
 <title>PokéMaster</title>
 <style>
@@ -109,7 +109,11 @@
     flex-direction: column;
     overflow: hidden;
     font-size: 15px;
-    height: 100dvh;
+    /* --app-height is set by JS on every load/resize/pageshow to always
+       reflect the true window.innerHeight in iOS PWA standalone mode.
+       Fallback to 100dvh for non-JS / first paint. */
+    height: var(--app-height, 100dvh);
+    max-height: var(--app-height, 100dvh);
     overscroll-behavior: none;
     position: relative;
   }
@@ -2632,6 +2636,19 @@ function showScreen(id) {
   next.getBoundingClientRect();
   next.classList.add('active');
 
+  // 🚫 Touch passthrough guard: any touch that started before this
+  // transition is considered stale and will be ignored by the touchend handler.
+  _lastUIChangeAt = Date.now();
+
+  // Ensure scroll is reset to prevent bottom-nav displacement in iOS
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  // Re-sync --app-height once all CSS transitions have completed (~300ms).
+  // Guards against any transient innerHeight captured during modal/keyboard
+  // dismiss that may have left --app-height at a stale value.
+  setTimeout(_fixAppHeight, 350);
+
   // nav — use opacity so position:fixed stays rendered on iOS GPU layer
   const nav = DOM['bottom-nav'];
   const mainScreens = ['screen-home','screen-editor','screen-editor-cat','screen-editor-subcat','screen-stats','screen-study-config'];
@@ -4121,19 +4138,13 @@ function buildSwipeRow({ label, sublabel, description = '', onTap, onRename, onD
     const item = document.createElement('div');
     item.className = 'category-item';
     item.innerHTML = `
-      <div class="category-name">${esc(label)}</div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+        <div class="category-name" style="flex:none;">${esc(label)}</div>
+        ${description ? `<div style="font-size:12px;color:var(--text3);line-height:1.3;">${esc(description)}</div>` : ''}
+      </div>
       <div class="category-count">${esc(sublabel)}</div>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
     `;
-    
-    // Add description below sublabel if exists
-    if (description) {
-      const descDiv = document.createElement('div');
-      descDiv.style.cssText = 'font-size:12px;color:var(--text3);margin-top:4px;line-height:1.3;';
-      descDiv.textContent = description;
-      const countDiv = item.querySelector('.category-count');
-      countDiv.insertAdjacentElement('afterend', descDiv);
-    }
 
     // Touch/swipe handling
     let startX = 0, startY = 0, dx = 0, isSwiping = false, isOpen = false;
@@ -4148,7 +4159,10 @@ function buildSwipeRow({ label, sublabel, description = '', onTap, onRename, onD
     const handleTouchMove = (e) => {
       dx = e.touches[0].clientX - startX;
       const dy = e.touches[0].clientY - startY;
-      if (!isSwiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) isSwiping = true;
+      if (!isSwiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
+        isSwiping = true;
+        item.style.willChange = 'transform'; // promote only while swiping
+      }
       if (!isSwiping) return;
       const current = isOpen ? -SWIPE_W + Math.min(0, dx) : Math.min(0, Math.max(-SWIPE_W, dx));
       item.style.transition = 'none';
@@ -4156,6 +4170,7 @@ function buildSwipeRow({ label, sublabel, description = '', onTap, onRename, onD
     };
     
     const handleTouchEnd = () => {
+      item.style.willChange = 'auto'; // release GPU layer after swipe
       if (!isSwiping) { isOpen ? closeSwipeRow(wrapper) : onTap(); return; }
       item.style.transition = '';
       const threshold = SWIPE_W * 0.4;
@@ -4167,7 +4182,7 @@ function buildSwipeRow({ label, sublabel, description = '', onTap, onRename, onD
     
     item.addEventListener('touchstart', handleTouchStart, { passive: true });
     item.addEventListener('touchmove', handleTouchMove, { passive: true });
-    item.addEventListener('touchend', handleTouchEnd);
+    item.addEventListener('touchend', handleTouchEnd, { passive: true });
     item.addEventListener('click', () => { if (!isOpen) onTap(); });
     
     // Guardar referencias para cleanup posterior
@@ -6333,7 +6348,15 @@ function toggleSound() {
   // Sync iOS toggle
   const t = document.getElementById('toggle-sound');
   if (t) t.classList.toggle('on', _soundEnabled);
-  if (_soundEnabled) playSound('correct');
+  // Suspend/resume AudioContext to free hardware when not in use
+  if (!_soundEnabled && _audioCtx && _audioCtx.state === 'running') {
+    _audioCtx.suspend();
+  } else if (_soundEnabled && _audioCtx && _audioCtx.state === 'suspended') {
+    _audioCtx.resume();
+    playSound('correct');
+  } else if (_soundEnabled) {
+    playSound('correct');
+  }
 }
 // Init sound toggle state on load
 (function() {
@@ -6812,8 +6835,20 @@ function initDomCache() {
 //  IOS SAFARI TOUCH FIX
 //  We fix this globally by forwarding touchend → click on any
 //  element that has an onclick attribute or handler.
+//
+//  Touch passthrough guard:
+//  _lastUIChangeAt  = timestamp of last screen/modal transition
+//  _currentTouchStartAt = timestamp of the current finger-down event
+//  If the touch started BEFORE the UI changed, it's a stale touch
+//  that crossed a screen boundary — we discard it entirely.
 // ══════════════════════════════════════════════
+let _lastUIChangeAt = 0;
+let _currentTouchStartAt = 0;
+
 document.addEventListener('touchend', function(e) {
+  // 🚫 Discard touches that started before the current screen/modal was shown
+  if (_currentTouchStartAt < _lastUIChangeAt) return;
+
   const el = e.target.closest('[onclick], .answer-opt, .mode-card, .category-item, .chip, .back-btn, .nav-btn');
   if (!el) return;
   // Only fire if touch didn't move (not a scroll)
@@ -6823,11 +6858,14 @@ document.addEventListener('touchend', function(e) {
         Math.abs(t.clientY - (el._touchStartY || t.clientY)) > 10) return;
   }
   // Prevent ghost click delay
-  e.preventDefault();
+  if (e.cancelable) e.preventDefault();
   el.click();
 }, { passive: false });
 
 document.addEventListener('touchstart', function(e) {
+  // Record the timestamp of every new finger-down event
+  _currentTouchStartAt = Date.now();
+
   const el = e.target.closest('[onclick], .answer-opt, .mode-card, .category-item, .chip, .back-btn, .nav-btn');
   if (!el) return;
   if (e.touches && e.touches.length > 0) {
@@ -6844,20 +6882,70 @@ document.addEventListener('touchstart', function(e) {
 //  PWA INSTALL PROMPT
 // ══════════════════════════════════════════════
 
-// ── iOS Visual Viewport: resetear layout cuando el teclado se cierra ──────
-// En iOS Safari, cuando el teclado aparece/desaparece, window.scrollY puede
-// quedar corrompido. Escuchamos el resize del visualViewport para corregirlo.
+// ── iOS PWA viewport fix ─────────────────────────────────────────────────
+// En iOS standalone (PWA), window.scrollY puede quedar con un valor distinto
+// de 0 al reabrir la app por segunda vez, desplazando el bottom-nav hacia
+// arriba. La solución es:
+//  1. Usar --app-height = window.innerHeight en lugar de 100dvh.
+//  2. Forzar window.scrollTo(0,0) en cada 'pageshow' y 'visibilitychange'.
+//  3. También en el resize del visualViewport (teclado).
+
+function _fixAppHeight() {
+  const h = window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', h + 'px');
+}
+
+function _resetScrollDrift() {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
+function _applyViewportFix() {
+  _fixAppHeight();
+  requestAnimationFrame(_resetScrollDrift);
+}
+
+// Inmediato al parsear el script
+_applyViewportFix();
+
+// Cada vez que la app se muestra (primera vez, segundo lanzamiento, vuelta
+// desde otra app). 'pageshow' se dispara incluso con bfcache.
+window.addEventListener('pageshow', _applyViewportFix);
+
+// Cuando el usuario vuelve a la pestaña/app tras minimizarla
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    // Pause all active timers to prevent CPU/battery drain in background
+    stopTimer();
+    stopExtremoPerQTimer();
+    if (challengeTotalTimerInterval) {
+      clearInterval(challengeTotalTimerInterval);
+      challengeTotalTimerInterval = null;
+    }
+    // Suspend AudioContext to release audio hardware
+    if (_audioCtx && _audioCtx.state === 'running') _audioCtx.suspend();
+  } else {
+    _applyViewportFix();
+    // Resume AudioContext if sound is enabled
+    if (_soundEnabled && _audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+  }
+});
+
+// Rotación o resize (también cubre apertura/cierre del teclado)
+window.addEventListener('resize', () => {
+  _fixAppHeight();
+  // No reseteamos scroll en resize genérico para no interferir con el
+  // teclado virtual; solo en visualViewport donde sabemos que no hay
+  // contenido que deba conservar su posición.
+});
+
+// visualViewport: teclado iOS
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    // Siempre reseteamos cualquier scroll drift en el body cuando el viewport
-    // cambia de tamaño (apertura/cierre del teclado en iOS). El scroll real
-    // de contenido ocurre dentro de .screen y no se ve afectado.
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    });
-  });
+    _fixAppHeight();
+    requestAnimationFrame(_resetScrollDrift);
+  }, { passive: true });
 }
 
 let _deferredPrompt = null;
