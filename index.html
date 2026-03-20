@@ -62,28 +62,31 @@
 
   /* ── LIGHT THEME ── */
   [data-theme="light"] {
-    --bg: #dde8f8;
-    --surface: #ffffff;
-    --surface2: #e8f0fc;
-    --surface3: #d4e0f4;
-    --border: #8ab4dc;
-    --border2: #6090cc;
+    --bg: #ccddf5;
+    --surface: #e8f2fe;
+    --surface2: #d8eafe;
+    --surface3: #c4d8f0;
+    --border: #7aaad8;
+    --border2: #5888c4;
     --text: #0a1428;
     --text1: #0a1428;
-    --text2: #2a4878;
-    --text3: #6080b8;
+    --text2: #1e3a70;
+    --text3: #4a6898;
     --accent: #cc1111;
-    --accent2: #b38800;
+    --accent2: #c49200;   /* bright amber gold — lighter/more vivid in light mode */
     --accent3: #1a55cc;
-    --accent4: #cc6600;
-    --poke-navy: #1a2d4f;
+    --accent4: #bb5500;
+    --poke-navy: #c0d4ee;  /* light in light mode — no dark gradient sink */
     --poke-blue: #1a44aa;
-    --poke-gold: #b38800;
+    --poke-gold: #b08800;
     --poke-gold-dark: #886600;
     --poke-white: #ffffff;
-    --danger: #dd2233;
-    --success: #009944;
-    --warning: #aa7700;
+    --danger: #cc2233;
+    --success: #007733;
+    --warning: #996600;
+    --glow-gold: 0 0 0 transparent;
+    --glow-red: 0 0 0 transparent;
+    --glow-blue: 0 0 0 transparent;
   }
 
   /* Theme transition */
@@ -116,6 +119,9 @@
     max-height: var(--app-height, 100dvh);
     overscroll-behavior: none;
     position: relative;
+  }
+  [data-theme="light"] body {
+    background: linear-gradient(135deg, #c0d8f4 0%, #cce0f8 40%, #b8d0ec 100%);
   }
 
   /* ── POKÉMON FONT UTILITY ── */
@@ -405,10 +411,58 @@
       0 0 30px rgba(255,203,5,.3);
     margin-bottom: 10px;
   }
+  /* Light mode: keep logo-title yellow (like dark mode), soften shadow */
   [data-theme="light"] .logo-title {
-    color: var(--accent);
-    -webkit-text-fill-color: var(--accent);
-    text-shadow: 2px 2px 0 rgba(0,0,0,.15), 0 0 20px rgba(238,21,21,.15);
+    color: var(--accent2);
+    -webkit-text-fill-color: var(--accent2);
+    text-shadow: 2px 2px 0 rgba(0,0,0,.20);
+  }
+  /* Light mode: screen backgrounds — light blue instead of dark overlay */
+  [data-theme="light"] body::before { opacity: 0; }
+  [data-theme="light"] .screen {
+    background: linear-gradient(135deg, rgba(200,220,245,.96) 0%, rgba(185,212,242,.96) 100%);
+  }
+  /* Light mode: bottom nav */
+  [data-theme="light"] .bottom-nav {
+    background: linear-gradient(180deg, #d4e8f8 0%, #c4dcf5 100%);
+    border-top-color: var(--accent2);
+    box-shadow: 0 -2px 14px rgba(0,0,0,.12);
+  }
+  [data-theme="light"] .nav-btn { color: var(--text2); }
+  [data-theme="light"] .nav-btn.active { color: var(--accent2); }
+  [data-theme="light"] .nav-btn.active::before {
+    background: var(--accent2);
+    box-shadow: 0 0 10px rgba(196,146,0,.6);
+  }
+  [data-theme="light"] .nav-btn.active svg { filter: drop-shadow(0 0 6px rgba(196,146,0,.7)); }
+  /* Challenge record stat-cards: stronger colored backgrounds in light mode */
+  [data-theme="light"] .stat-card[style*="rgba(255,79,110"] {
+    border-color: rgba(200,40,70,.4) !important;
+    background: rgba(240,70,100,.14) !important;
+  }
+  [data-theme="light"] .stat-card[style*="rgba(255,110,156"] {
+    border-color: rgba(200,60,110,.4) !important;
+    background: rgba(240,90,145,.14) !important;
+  }
+  [data-theme="light"] .stat-card[style*="rgba(255,217,110"] {
+    border-color: rgba(185,145,0,.4) !important;
+    background: rgba(230,190,30,.18) !important;
+  }
+  [data-theme="light"] .page-header h1 {
+    text-shadow: 1px 1px 0 rgba(0,0,0,.12);
+  }
+  /* Light mode: stat/mode cards: remove dark navy gradient sink */
+  [data-theme="light"] .stat-card {
+    background: linear-gradient(145deg, var(--surface) 0%, var(--surface3) 100%);
+  }
+  [data-theme="light"] .mode-card {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  /* Light mode: q-card bright */
+  [data-theme="light"] .q-card {
+    background: linear-gradient(145deg, var(--surface) 0%, var(--surface2) 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,.10);
   }
   .logo-sub { font-size: 13px; color: var(--text2); font-family: 'Sora', sans-serif; }
 
@@ -1389,7 +1443,7 @@
   <div id="challenge-total-timer-wrap" style="display:none;text-align:center;font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent4);margin-bottom:10px;letter-spacing:2px;">60</div>
 
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-    <div class="badge" id="challenge-mode-badge" style="background:rgba(255,51,69,.15);color:var(--danger);font-size:12px;padding:6px 12px;">⚽ Normal</div>
+    <div class="badge" id="challenge-mode-badge" style="background:rgba(255,51,69,.15);color:var(--danger);font-size:12px;padding:6px 12px;">⚔️ Normal</div>
     <div style="font-size:12px;color:var(--text3);">Récord: <span id="challenge-record-live" style="color:var(--accent4);font-weight:700;">0</span></div>
   </div>
 
@@ -1881,7 +1935,7 @@
     <div class="home-stats" style="margin-bottom:12px;">
       <div class="stat-card" style="border-color:rgba(255,79,110,.3);background:rgba(255,79,110,.05);">
         <div class="stat-num" id="st-challenge-record" style="font-size:24px;color:var(--danger);">—</div>
-        <div class="stat-label">⚽ Récord Normal</div>
+        <div class="stat-label">⚔️ Récord Normal</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" id="st-challenge-runs" style="font-size:22px;">0</div>
@@ -1910,7 +1964,7 @@
     </div>
 
     <!-- GLOBAL ACCURACY -->
-    <div class="section-title">� Rendimiento como Entrenador</div>
+    <div class="section-title">⚡ Rendimiento como Entrenador</div>
     <div class="card" style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <span style="font-size:13px;color:var(--text2);">Precisión global</span>
@@ -1939,14 +1993,14 @@
 
     <!-- HISTORIAL DE ESTUDIO -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="section-title" style="margin-bottom:0;">� Historial de Entrenamiento</div>
+      <div class="section-title" style="margin-bottom:0;">📖 Historial de Entrenamiento</div>
       <button id="btn-ver-historial-estudio" onclick="goStudyHistory()" style="display:none;background:none;border:none;font-size:12px;color:var(--accent);font-family:'Sora',sans-serif;font-weight:600;cursor:pointer;padding:0;touch-action:manipulation;">Ver todo →</button>
     </div>
     <div id="st-study-history-list" style="margin-bottom:20px;min-height:40px;"></div>
 
     <!-- HISTORIAL DE DESAFÍO -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="section-title" style="margin-bottom:0;">⚽ Historial Modo Batalla</div>
+      <div class="section-title" style="margin-bottom:0;">⚔️ Historial Modo Batalla</div>
       <button id="btn-ver-historial-desafio" onclick="goChallengeHistory()" style="display:none;background:none;border:none;font-size:12px;color:var(--accent);font-family:'Sora',sans-serif;font-weight:600;cursor:pointer;padding:0;touch-action:manipulation;">Ver todo →</button>
     </div>
     <div id="st-challenge-history-list" style="margin-bottom:20px;min-height:40px;"></div>
@@ -2168,7 +2222,7 @@
     </div>
 
     <div class="mode-subopt" onclick="startChallengeCountdown('normal')" style="margin-bottom:8px;">
-      <div class="subopt-icon" style="background:rgba(255,79,110,.15);color:var(--danger);">⚽</div>
+      <div class="subopt-icon" style="background:rgba(255,79,110,.15);color:var(--danger);">⚔️</div>
       <div style="flex:1;min-width:0;">
         <h4>Normal</h4>
         <p>¿Cuántas respuestas puedes acumular?</p>
@@ -5857,11 +5911,11 @@ function startChallengeCountdown(mode) {
 
   // Update mode badge on challenge screen
   const modeBadgeEl = document.getElementById('challenge-mode-badge');
-  const modeBadgeTxts = { normal: '⚽ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
+  const modeBadgeTxts = { normal: '⚔️ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
   const modeBadgeBgs  = { normal: 'rgba(255,79,110,.15)', extremo: 'rgba(255,110,156,.15)', contrarreloj: 'rgba(255,217,110,.15)' };
   const modeBadgeFgs  = { normal: 'var(--danger)', extremo: 'var(--accent2)', contrarreloj: 'var(--accent4)' };
   if (modeBadgeEl) {
-    modeBadgeEl.textContent = modeBadgeTxts[challengeMode] || '⚽ Normal';
+    modeBadgeEl.textContent = modeBadgeTxts[challengeMode] || '⚔️ Normal';
     modeBadgeEl.style.background = modeBadgeBgs[challengeMode] || 'rgba(255,79,110,.15)';
     modeBadgeEl.style.color = modeBadgeFgs[challengeMode] || 'var(--danger)';
   }
@@ -6159,12 +6213,12 @@ function finishChallenge(failedQ) {
   document.getElementById('ch-res-record').textContent = newModeRecord;
 
   // Mode badge on result screen
-  const modeLabels = { normal: '⚽ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
+  const modeLabels = { normal: '⚔️ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
   const modeBgs = { normal: 'rgba(255,79,110,.15)', extremo: 'rgba(255,110,156,.15)', contrarreloj: 'rgba(255,217,110,.15)' };
   const modeCols = { normal: 'var(--danger)', extremo: 'var(--accent2)', contrarreloj: 'var(--accent4)' };
   const resModeEl = document.getElementById('ch-res-mode-badge');
   if (resModeEl) {
-    resModeEl.textContent = modeLabels[challengeMode] || '⚽ Normal';
+    resModeEl.textContent = modeLabels[challengeMode] || '⚔️ Normal';
     resModeEl.style.background = modeBgs[challengeMode] || 'rgba(255,79,110,.15)';
     resModeEl.style.color = modeCols[challengeMode] || 'var(--danger)';
   }
@@ -6230,9 +6284,9 @@ function repeatChallenge() {
 
 function buildChallengeHistoryCard(e) {
   const mode = e.mode || 'normal';
-  const modeLabels = { normal: '⚽ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
+  const modeLabels = { normal: '⚔️ Normal', extremo: '🔥 Extremo', contrarreloj: '⏱️ Contrarreloj' };
   const modeColors = { normal: 'var(--danger)', extremo: 'var(--accent2)', contrarreloj: 'var(--accent4)' };
-  const modeLabel = modeLabels[mode] || '⚽ Normal';
+  const modeLabel = modeLabels[mode] || '⚔️ Normal';
   const modeColor = modeColors[mode] || 'var(--danger)';
   const score = e.score ?? 0;
   const scoreColor = score >= 20 ? 'var(--success)' : score >= 10 ? 'var(--warning)' : 'var(--danger)';
@@ -6332,7 +6386,7 @@ function applyTheme(theme) {
 // Load saved theme on init
 (function() {
   const saved = localStorage.getItem(THEME_KEY);
-  if (saved) applyTheme(saved);
+  applyTheme(saved || 'dark');
 })();
 
 // ══════════════════════════════════════════════
