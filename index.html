@@ -116,13 +116,10 @@
     /* --app-height is set by JS on every load/resize/pageshow to always
        reflect the true window.innerHeight in iOS PWA standalone mode.
        Fallback to 100dvh for non-JS / first paint. */
-    height: var(--app-height, 100dvh);
-    max-height: var(--app-height, 100dvh);
     overscroll-behavior: none;
     position: fixed;
     inset: 0;
     width: 100%;
-    min-height: var(--app-height, 100dvh);
   }
   [data-theme="light"] body {
     background: linear-gradient(135deg, #c0d8f4 0%, #cce0f8 40%, #b8d0ec 100%);
@@ -7095,6 +7092,8 @@ document.addEventListener('touchend', function(e) {
   // If a screen changed while a finger was still down, ignore all touches
   // until every finger is lifted and the user starts a fresh touch.
   if (_blockTouchUntilRelease) {
+    if (e.cancelable) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
     if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
     return;
   }
@@ -7133,6 +7132,16 @@ document.addEventListener('touchcancel', function(e) {
   if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
 }, { passive: true });
 
+// Block delayed/native click events that can leak into the next screen
+// after a long press crossing a transition.
+document.addEventListener('click', function(e) {
+  if (_blockTouchUntilRelease || _currentTouchStartAt < _lastUIChangeAt) {
+    if (e.cancelable) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    return;
+  }
+}, true);
+
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
@@ -7154,12 +7163,7 @@ function _fixAppHeight() {
   const candidates = [window.innerHeight, document.documentElement.clientHeight];
   if (vv) candidates.push(Math.round(vv.height + vv.offsetTop));
   const h = Math.max(...candidates.filter(n => Number.isFinite(n) && n > 0));
-  const px = Math.max(h, 320) + 'px';
-  document.documentElement.style.setProperty('--app-height', px);
-  if (document.body) {
-    document.body.style.height = px;
-    document.body.style.minHeight = px;
-  }
+  document.documentElement.style.setProperty('--app-height', Math.max(h, 320) + 'px');
 }
 
 function _resetScrollDrift() {
@@ -7274,6 +7278,10 @@ window.addEventListener('resize', () => {
 window.addEventListener('orientationchange', () => {
   _scheduleViewportFix(true, 120);
 });
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY !== 0) _resetScrollDrift();
+}, { passive: true });
 
 // visualViewport: teclado iOS
 if (window.visualViewport) {
