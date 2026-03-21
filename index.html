@@ -240,7 +240,7 @@
 
   /* ── BOTTOM NAV — Pokémon game style ── */
   .bottom-nav {
-    position: fixed;
+    position: absolute;
     bottom: 0; left: 0; right: 0;
     width: 100%;
     z-index: 200;
@@ -2774,10 +2774,8 @@ function showScreen(id) {
   next.getBoundingClientRect();
   next.classList.add('active');
 
-  // 🚫 Touch passthrough guard: any touch that started before this
-  // transition is considered stale and will be ignored by the touchend handler.
-  _lastUIChangeAt = Date.now();
-  if (_activeTouchCount > 0) _blockTouchUntilRelease = true;
+  // Touch guard: require a fresh touch sequence after screen transition.
+  _markUiTransition();
 
   // Ensure scroll is reset to prevent bottom-nav displacement in iOS
   window.scrollTo(0, 0);
@@ -5265,6 +5263,7 @@ function clearAllData() {
 // ══════════════════════════════════════════════
 function openModal(id) {
   const m = document.getElementById(id);
+  _markUiTransition();
   m.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -5278,6 +5277,7 @@ function closeModal(id) {
   }
   const m = document.getElementById(id);
   if (!m) return;
+  _markUiTransition();
   m.classList.remove('open');
   document.body.style.overflow = '';
   // iOS puede restaurar el viewport en dos fases al cerrar teclado.
@@ -7085,6 +7085,15 @@ let _lastUIChangeAt = 0;
 let _currentTouchStartAt = 0;
 let _activeTouchCount = 0;
 let _blockTouchUntilRelease = false;
+let _touchSeq = 0;
+let _minTouchSeqAfterUiChange = 0;
+
+function _markUiTransition() {
+  _lastUIChangeAt = Date.now();
+  // Require a brand-new touchstart after any UI transition.
+  _minTouchSeqAfterUiChange = _touchSeq + 1;
+  if (_activeTouchCount > 0) _blockTouchUntilRelease = true;
+}
 
 document.addEventListener('touchend', function(e) {
   _activeTouchCount = e.touches ? e.touches.length : 0;
@@ -7095,6 +7104,13 @@ document.addEventListener('touchend', function(e) {
     if (e.cancelable) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
+    return;
+  }
+
+  // Ignore any touch sequence that started before the latest UI transition.
+  if (_touchSeq < _minTouchSeqAfterUiChange) {
+    if (e.cancelable) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
     return;
   }
 
@@ -7117,6 +7133,7 @@ document.addEventListener('touchend', function(e) {
 document.addEventListener('touchstart', function(e) {
   // Record the timestamp of every new finger-down event
   _currentTouchStartAt = Date.now();
+  _touchSeq++;
   _activeTouchCount = e.touches ? e.touches.length : 1;
 
   const el = e.target.closest('[onclick], .answer-opt, .mode-card, .category-item, .chip, .back-btn, .nav-btn');
@@ -7135,7 +7152,7 @@ document.addEventListener('touchcancel', function(e) {
 // Block delayed/native click events that can leak into the next screen
 // after a long press crossing a transition.
 document.addEventListener('click', function(e) {
-  if (_blockTouchUntilRelease || _currentTouchStartAt < _lastUIChangeAt) {
+  if (_blockTouchUntilRelease || _currentTouchStartAt < _lastUIChangeAt || _touchSeq < _minTouchSeqAfterUiChange) {
     if (e.cancelable) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     return;
