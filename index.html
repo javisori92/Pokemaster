@@ -96,16 +96,13 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  html, body {
+  html {
     width: 100%;
-    height: var(--app-height, 100dvh);
-    max-height: var(--app-height, 100dvh);
+    height: 100%;
     margin: 0; padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
     background: var(--bg);
-    position: fixed;
-    inset: 0;
   }
 
   body {
@@ -122,7 +119,10 @@
     height: var(--app-height, 100dvh);
     max-height: var(--app-height, 100dvh);
     overscroll-behavior: none;
-    position: relative;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    min-height: var(--app-height, 100dvh);
   }
   [data-theme="light"] body {
     background: linear-gradient(135deg, #c0d8f4 0%, #cce0f8 40%, #b8d0ec 100%);
@@ -2780,6 +2780,7 @@ function showScreen(id) {
   // 🚫 Touch passthrough guard: any touch that started before this
   // transition is considered stale and will be ignored by the touchend handler.
   _lastUIChangeAt = Date.now();
+  if (_activeTouchCount > 0) _blockTouchUntilRelease = true;
 
   // Ensure scroll is reset to prevent bottom-nav displacement in iOS
   window.scrollTo(0, 0);
@@ -7085,8 +7086,19 @@ function initDomCache() {
 // ══════════════════════════════════════════════
 let _lastUIChangeAt = 0;
 let _currentTouchStartAt = 0;
+let _activeTouchCount = 0;
+let _blockTouchUntilRelease = false;
 
 document.addEventListener('touchend', function(e) {
+  _activeTouchCount = e.touches ? e.touches.length : 0;
+
+  // If a screen changed while a finger was still down, ignore all touches
+  // until every finger is lifted and the user starts a fresh touch.
+  if (_blockTouchUntilRelease) {
+    if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
+    return;
+  }
+
   // 🚫 Discard touches that started before the current screen/modal was shown
   if (_currentTouchStartAt < _lastUIChangeAt) return;
 
@@ -7106,6 +7118,7 @@ document.addEventListener('touchend', function(e) {
 document.addEventListener('touchstart', function(e) {
   // Record the timestamp of every new finger-down event
   _currentTouchStartAt = Date.now();
+  _activeTouchCount = e.touches ? e.touches.length : 1;
 
   const el = e.target.closest('[onclick], .answer-opt, .mode-card, .category-item, .chip, .back-btn, .nav-btn');
   if (!el) return;
@@ -7113,6 +7126,11 @@ document.addEventListener('touchstart', function(e) {
     el._touchStartX = e.touches[0].clientX;
     el._touchStartY = e.touches[0].clientY;
   }
+}, { passive: true });
+
+document.addEventListener('touchcancel', function(e) {
+  _activeTouchCount = e.touches ? e.touches.length : 0;
+  if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
 }, { passive: true });
 
 // ══════════════════════════════════════════════
@@ -7133,8 +7151,15 @@ document.addEventListener('touchstart', function(e) {
 
 function _fixAppHeight() {
   const vv = window.visualViewport;
-  const h = vv ? Math.round(vv.height + vv.offsetTop) : window.innerHeight;
-  document.documentElement.style.setProperty('--app-height', Math.max(h, 320) + 'px');
+  const candidates = [window.innerHeight, document.documentElement.clientHeight];
+  if (vv) candidates.push(Math.round(vv.height + vv.offsetTop));
+  const h = Math.max(...candidates.filter(n => Number.isFinite(n) && n > 0));
+  const px = Math.max(h, 320) + 'px';
+  document.documentElement.style.setProperty('--app-height', px);
+  if (document.body) {
+    document.body.style.height = px;
+    document.body.style.minHeight = px;
+  }
 }
 
 function _resetScrollDrift() {
@@ -7146,6 +7171,12 @@ function _resetScrollDrift() {
 function _applyViewportFix() {
   _fixAppHeight();
   requestAnimationFrame(_resetScrollDrift);
+}
+
+function _stabilizeViewportOnOpen() {
+  _applyViewportFix();
+  setTimeout(_applyViewportFix, 120);
+  setTimeout(_applyViewportFix, 380);
 }
 
 let _viewportFixTimer = null;
@@ -7206,11 +7237,11 @@ function togglePowerSave() {
 })();
 
 // Inmediato al parsear el script
-_applyViewportFix();
+_stabilizeViewportOnOpen();
 
 // Cada vez que la app se muestra (primera vez, segundo lanzamiento, vuelta
 // desde otra app). 'pageshow' se dispara incluso con bfcache.
-window.addEventListener('pageshow', _applyViewportFix);
+window.addEventListener('pageshow', _stabilizeViewportOnOpen);
 
 // Cuando el usuario vuelve a la pestaña/app tras minimizarla
 document.addEventListener('visibilitychange', () => {
