@@ -97,11 +97,15 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   html, body {
-    height: 100%;
+    width: 100%;
+    height: var(--app-height, 100dvh);
+    max-height: var(--app-height, 100dvh);
     margin: 0; padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
     background: var(--bg);
+    position: fixed;
+    inset: 0;
   }
 
   body {
@@ -183,6 +187,7 @@
     overflow-y: auto; overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain; /* prevent scroll from leaking to body */
+    padding: calc(var(--safe-top) + 12px) 18px calc(80px + constant(safe-area-inset-bottom));
     padding: calc(var(--safe-top) + 12px) 18px calc(80px + env(safe-area-inset-bottom, 0px));
     opacity: 0; pointer-events: none;
     transform: translateY(20px);
@@ -210,6 +215,7 @@
     box-shadow: 0 -4px 24px rgba(255,203,5,.2), 0 -1px 0 rgba(255,203,5,.1);
     display: flex;
     align-items: stretch;
+    padding-bottom: constant(safe-area-inset-bottom);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     transition: opacity .2s ease;
   }
@@ -6075,6 +6081,24 @@ function buildChallengeQueue(adaptiveWeight) {
   });
 }
 
+function recordChallengeQuestionResult(q, isCorrect) {
+  if (!q || !q.id) return;
+  const st = loadStats();
+  if (!st.questions[q.id]) {
+    st.questions[q.id] = {
+      correct: 0,
+      wrong: 0,
+      text: q.question,
+      cat: q.cat,
+      subcat: q.subcat || ''
+    };
+  }
+  if (isCorrect) st.questions[q.id].correct++;
+  else st.questions[q.id].wrong++;
+  st.questions[q.id].lastSeen = Date.now();
+  saveStats(st);
+}
+
 // Returns adaptive weight for challenge based on proximity to record
 // 0% of record → weight 0 (pure random)
 // 80%+ of record → weight increases linearly up to 0.8
@@ -6136,6 +6160,7 @@ function challengeAnswer(i) {
   if (challengeMode === 'extremo') stopExtremoPerQTimer();
 
   if (i === q.opts.correct) {
+    recordChallengeQuestionResult(q, true);
     opts[i].classList.add('correct');
     challengeScore++;
     challengeIndex++;
@@ -6157,6 +6182,7 @@ function challengeAnswer(i) {
       setTimeout(() => renderChallengeQuestion(), 400);
     }
   } else {
+    recordChallengeQuestionResult(q, false);
     opts[i].classList.add('wrong');
     opts[q.opts.correct].classList.add('correct');
     if (challengeMode === 'contrarreloj') {
@@ -6971,8 +6997,9 @@ document.addEventListener('touchstart', function(e) {
 //  3. También en el resize del visualViewport (teclado).
 
 function _fixAppHeight() {
-  const h = window.innerHeight;
-  document.documentElement.style.setProperty('--app-height', h + 'px');
+  const vv = window.visualViewport;
+  const h = vv ? Math.round(vv.height + vv.offsetTop) : window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', Math.max(h, 320) + 'px');
 }
 
 function _resetScrollDrift() {
@@ -7018,6 +7045,10 @@ window.addEventListener('resize', () => {
   // No reseteamos scroll en resize genérico para no interferir con el
   // teclado virtual; solo en visualViewport donde sabemos que no hay
   // contenido que deba conservar su posición.
+});
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(_applyViewportFix, 120);
 });
 
 // visualViewport: teclado iOS
