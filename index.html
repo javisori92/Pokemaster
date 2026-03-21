@@ -162,6 +162,43 @@
     animation: nebulaPulse 8s ease-in-out infinite;
   }
 
+  body.no-ambient-motion::before {
+    animation: none;
+  }
+
+  body.no-ambient-motion::after {
+    opacity: 0.28;
+  }
+
+  body.low-gpu {
+    --glow-gold: 0 0 0 transparent;
+    --glow-red: 0 0 0 transparent;
+    --glow-blue: 0 0 0 transparent;
+  }
+
+  body.low-gpu .modal-overlay,
+  body.low-gpu #modal-challenge-countdown {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0,0,0,.62);
+  }
+
+  body.low-gpu .bottom-nav {
+    box-shadow: 0 -2px 10px rgba(0,0,0,.25);
+  }
+
+  body.low-gpu .nav-btn.active svg,
+  body.low-gpu [data-theme="light"] .nav-btn.active svg {
+    filter: none;
+  }
+
+  body.low-gpu .toast,
+  body.low-gpu .setup-box,
+  body.low-gpu .mode-card,
+  body.low-gpu .q-card {
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+  }
+
   /* ── SCREEN CONTAINER fills all space above the nav ── */
   #app-screens {
     flex: 1;
@@ -1199,6 +1236,14 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1358,6 +1403,22 @@
         </div>
       </div>
       <div class="ios-toggle" id="toggle-sound">
+        <div class="ios-toggle-knob"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Rendimiento</div>
+  <div class="card" style="padding:0;margin-bottom:20px;">
+    <div class="settings-row" onclick="togglePowerSave()">
+      <div class="settings-info">
+        <div class="settings-icon-wrap">🔋</div>
+        <div>
+          <div class="settings-label">Ahorro de batería</div>
+          <div class="settings-sub" id="power-save-sub">Reduce efectos visuales para consumir menos batería</div>
+        </div>
+      </div>
+      <div class="ios-toggle" id="toggle-power-save">
         <div class="ios-toggle-knob"></div>
       </div>
     </div>
@@ -2424,7 +2485,25 @@ let _catSubcatCountCache = null; // Caché: { 'cat\tsubcat': count }
 //  DATA LAYER
 // ══════════════════════════════════════════════
 const STORE_KEY = 'pokemaster_data';
+const SETUP_DONE_KEY = 'pokemaster_setup_done';
 let db = { questions: [] };
+
+function markSetupDone() {
+  try { localStorage.setItem(SETUP_DONE_KEY, '1'); } catch(e) {}
+}
+
+function hasSetupDone() {
+  try {
+    if (localStorage.getItem(SETUP_DONE_KEY) === '1') return true;
+    // Migracion suave: si ya hay datos persistidos de una instalacion previa,
+    // consideramos setup completado para entrar directo al menu principal.
+    if (localStorage.getItem(STORE_KEY)) {
+      markSetupDone();
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
 
 function loadDB() {
   invalidateQuestionIndex();
@@ -2575,6 +2654,7 @@ window.addEventListener('beforeunload', () => {
     _saveDBTimer = null;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch(e) {}
   }
+  flushChallengeQuestionStats();
 });
 
 function invalidateQuestionIndex() { _questionIndex = null; _categoriesCache = null; _catQuestionsCache = null; _catSubcatCountCache = null; }
@@ -2690,6 +2770,7 @@ function showScreen(id) {
   }
 
   currentScreen = id;
+  document.body.classList.toggle('no-ambient-motion', id !== 'screen-home');
   const next = document.getElementById(id);
   next.classList.remove('exit');
   next.style.display = 'flex';
@@ -2786,6 +2867,7 @@ function setupSelectFile() {
 function setupNewFile() { finishSetup(); }
 
 function finishSetup() {
+  markSetupDone();
   updateHomeStats();
   showScreen('screen-home');
 }
@@ -5899,6 +5981,52 @@ let challengePerQTimerInterval = null;
 let challengeTotalTimerInterval = null;
 let challengeTotalTimeLeft = 60;
 let challengePerQTimeLeft = 0;
+let challengePerQWarningShown = false;
+let _challengeStatsBuffer = {};
+let _challengeStatsFlushTimer = null;
+
+function resetChallengeStatsBuffer() {
+  _challengeStatsBuffer = {};
+  if (_challengeStatsFlushTimer) {
+    clearTimeout(_challengeStatsFlushTimer);
+    _challengeStatsFlushTimer = null;
+  }
+}
+
+function flushChallengeQuestionStats() {
+  const ids = Object.keys(_challengeStatsBuffer);
+  if (ids.length === 0) return;
+  const st = loadStats();
+  ids.forEach(id => {
+    const delta = _challengeStatsBuffer[id];
+    if (!delta) return;
+    if (!st.questions[id]) {
+      st.questions[id] = {
+        correct: 0,
+        wrong: 0,
+        text: delta.text || '',
+        cat: delta.cat || '',
+        subcat: delta.subcat || ''
+      };
+    }
+    st.questions[id].correct += delta.correct || 0;
+    st.questions[id].wrong += delta.wrong || 0;
+    if (!st.questions[id].text && delta.text) st.questions[id].text = delta.text;
+    if (!st.questions[id].cat && delta.cat) st.questions[id].cat = delta.cat;
+    if (!st.questions[id].subcat && delta.subcat) st.questions[id].subcat = delta.subcat;
+    st.questions[id].lastSeen = Math.max(st.questions[id].lastSeen || 0, delta.lastSeen || 0);
+  });
+  saveStats(st);
+  _challengeStatsBuffer = {};
+}
+
+function scheduleChallengeStatsFlush() {
+  if (_challengeStatsFlushTimer) return;
+  _challengeStatsFlushTimer = setTimeout(() => {
+    _challengeStatsFlushTimer = null;
+    flushChallengeQuestionStats();
+  }, 4000);
+}
 
 function goChallenge() {
   if (db.questions.length === 0) {
@@ -5917,6 +6045,7 @@ function goChallenge() {
 function startChallengeCountdown(mode) {
   challengeMode = mode || 'normal';
   closeModal('modal-challenge-intro');
+  resetChallengeStatsBuffer();
 
   challengeQueue = buildChallengeQueue(0);
   challengeIndex = 0;
@@ -6027,19 +6156,23 @@ function startContrarrelojTimer() {
 
 function startExtremoPerQTimer() {
   stopExtremoPerQTimer();
-  challengePerQTimeLeft = 60;
+  challengePerQTimeLeft = 6000;
+  challengePerQWarningShown = false;
   const bar = document.getElementById('challenge-perq-bar');
   if (bar) { bar.style.width = '100%'; bar.style.background = 'var(--accent3)'; }
   challengePerQTimerInterval = setInterval(() => {
-    challengePerQTimeLeft--;
-    const pct = (challengePerQTimeLeft / 60) * 100;
+    challengePerQTimeLeft -= 250;
+    const pct = Math.max((challengePerQTimeLeft / 6000) * 100, 0);
     if (bar) {
       bar.style.width = `${pct}%`;
       if (pct < 34) bar.style.background = 'var(--warning)';
       if (pct < 17) bar.style.background = 'var(--danger)';
     }
     DOM['challenge-progress'].style.width = `${pct}%`;
-    if (pct < 34) DOM['challenge-progress'].style.background = 'linear-gradient(90deg,var(--warning),var(--danger))';
+    if (pct < 34 && !challengePerQWarningShown) {
+      DOM['challenge-progress'].style.background = 'linear-gradient(90deg,var(--warning),var(--danger))';
+      challengePerQWarningShown = true;
+    }
     if (challengePerQTimeLeft <= 0) {
       stopExtremoPerQTimer();
       document.querySelectorAll('#challenge-answers .answer-opt').forEach(o => {
@@ -6047,7 +6180,7 @@ function startExtremoPerQTimer() {
       });
       showTiempoOverlay(() => finishChallenge(null));
     }
-  }, 100);
+  }, 250);
 }
 
 function stopExtremoPerQTimer() {
@@ -6055,6 +6188,7 @@ function stopExtremoPerQTimer() {
     clearInterval(challengePerQTimerInterval);
     challengePerQTimerInterval = null;
   }
+  challengePerQWarningShown = false;
 }
 
 function showTiempoOverlay(callback) {
@@ -6083,9 +6217,8 @@ function buildChallengeQueue(adaptiveWeight) {
 
 function recordChallengeQuestionResult(q, isCorrect) {
   if (!q || !q.id) return;
-  const st = loadStats();
-  if (!st.questions[q.id]) {
-    st.questions[q.id] = {
+  if (!_challengeStatsBuffer[q.id]) {
+    _challengeStatsBuffer[q.id] = {
       correct: 0,
       wrong: 0,
       text: q.question,
@@ -6093,10 +6226,10 @@ function recordChallengeQuestionResult(q, isCorrect) {
       subcat: q.subcat || ''
     };
   }
-  if (isCorrect) st.questions[q.id].correct++;
-  else st.questions[q.id].wrong++;
-  st.questions[q.id].lastSeen = Date.now();
-  saveStats(st);
+  if (isCorrect) _challengeStatsBuffer[q.id].correct++;
+  else _challengeStatsBuffer[q.id].wrong++;
+  _challengeStatsBuffer[q.id].lastSeen = Date.now();
+  scheduleChallengeStatsFlush();
 }
 
 // Returns adaptive weight for challenge based on proximity to record
@@ -6241,6 +6374,7 @@ function finishChallenge(failedQ) {
   challengeFinished = true;
   stopExtremoPerQTimer();
   if (challengeTotalTimerInterval) { clearInterval(challengeTotalTimerInterval); challengeTotalTimerInterval = null; }
+  flushChallengeQuestionStats();
 
   const stBefore = loadStats();
   const prevRecord = challengeMode === 'extremo' ? (stBefore.challengeExtremoRecord || 0)
@@ -6405,6 +6539,7 @@ function confirmAbortChallenge() {
   showConfirm('¿Abandonar desafío?', `Llevas ${challengeScore} pregunta${challengeScore === 1 ? '' : 's'} correctas. Se perderá tu progreso.`, () => {
     stopExtremoPerQTimer();
     if (challengeTotalTimerInterval) { clearInterval(challengeTotalTimerInterval); challengeTotalTimerInterval = null; }
+    resetChallengeStatsBuffer();
     goHome();
   });
 }
@@ -6914,7 +7049,7 @@ function initDomCache() {
     // Review
     'review-list','review-counter',
     // Home toggles & misc
-    'toggle-theme','toggle-sound',
+    'toggle-theme','toggle-sound','toggle-power-save','power-save-sub',
     'btn-ver-historial','btn-new-exam',
     // Exam buttons
     'btn-prev','btn-next','btn-finish',
@@ -7013,6 +7148,63 @@ function _applyViewportFix() {
   requestAnimationFrame(_resetScrollDrift);
 }
 
+let _viewportFixTimer = null;
+function _scheduleViewportFix(resetScroll, delay) {
+  if (_viewportFixTimer) clearTimeout(_viewportFixTimer);
+  _viewportFixTimer = setTimeout(() => {
+    _viewportFixTimer = null;
+    _fixAppHeight();
+    if (resetScroll) requestAnimationFrame(_resetScrollDrift);
+  }, delay || 80);
+}
+
+const POWER_SAVE_KEY = 'pokemaster_power_save';
+let _powerSaveForced = localStorage.getItem(POWER_SAVE_KEY) === '1';
+
+function _isIphoneDevice() {
+  const ua = navigator.userAgent || '';
+  const isiPhone = /iPhone/i.test(ua);
+  const isiPad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isiPhone && !isiPad;
+}
+
+function _syncPowerSaveSubtitle() {
+  const sub = document.getElementById('power-save-sub');
+  if (!sub) return;
+  if (_powerSaveForced) {
+    sub.textContent = 'Forzado manualmente en este dispositivo';
+  } else if (_isIphoneDevice()) {
+    sub.textContent = 'Automático en iPhone para reducir consumo';
+  } else {
+    sub.textContent = 'Desactivado. Actívalo para priorizar batería';
+  }
+}
+
+function _shouldUseLowGpuProfile() {
+  // Priorizamos iPhone por batería/termal; en iPad mantenemos visual completo.
+  return _powerSaveForced || _isIphoneDevice();
+}
+
+function _applyPerformanceProfile() {
+  const lowGpu = _shouldUseLowGpuProfile();
+  document.body.classList.toggle('low-gpu', lowGpu);
+  const t = document.getElementById('toggle-power-save');
+  if (t) t.classList.toggle('on', _powerSaveForced);
+  _syncPowerSaveSubtitle();
+}
+
+function togglePowerSave() {
+  _powerSaveForced = !_powerSaveForced;
+  localStorage.setItem(POWER_SAVE_KEY, _powerSaveForced ? '1' : '0');
+  _applyPerformanceProfile();
+}
+
+// Init battery saver toggle state on load
+(function() {
+  const t = document.getElementById('toggle-power-save');
+  if (t) t.classList.toggle('on', _powerSaveForced);
+})();
+
 // Inmediato al parsear el script
 _applyViewportFix();
 
@@ -7023,6 +7215,7 @@ window.addEventListener('pageshow', _applyViewportFix);
 // Cuando el usuario vuelve a la pestaña/app tras minimizarla
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
+    flushChallengeQuestionStats();
     // Pause all active timers to prevent CPU/battery drain in background
     stopTimer();
     stopExtremoPerQTimer();
@@ -7041,21 +7234,20 @@ document.addEventListener('visibilitychange', () => {
 
 // Rotación o resize (también cubre apertura/cierre del teclado)
 window.addEventListener('resize', () => {
-  _fixAppHeight();
+  _scheduleViewportFix(false, 50);
   // No reseteamos scroll en resize genérico para no interferir con el
   // teclado virtual; solo en visualViewport donde sabemos que no hay
   // contenido que deba conservar su posición.
 });
 
 window.addEventListener('orientationchange', () => {
-  setTimeout(_applyViewportFix, 120);
+  _scheduleViewportFix(true, 120);
 });
 
 // visualViewport: teclado iOS
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    _fixAppHeight();
-    requestAnimationFrame(_resetScrollDrift);
+    _scheduleViewportFix(true, 70);
   }, { passive: true });
 }
 
@@ -7192,6 +7384,7 @@ self.addEventListener('fetch', e => {
 })();
 
 loadDB();
+_applyPerformanceProfile();
 initDomCache();
 
 // Ensure all non-setup screens are hidden at start
@@ -7200,6 +7393,16 @@ initDomCache();
   const el = document.getElementById(id);
   if (el) { el.style.display = 'none'; el.classList.remove('active'); }
 });
+
+if (hasSetupDone()) {
+  const setupEl = document.getElementById('screen-setup');
+  if (setupEl) {
+    setupEl.style.display = 'none';
+    setupEl.classList.remove('active');
+  }
+  updateHomeStats();
+  showScreen('screen-home');
+}
 </script>
 
 <!-- ═══ PWA INSTALL BANNER ═══ -->
