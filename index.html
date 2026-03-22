@@ -180,7 +180,7 @@
   body.low-gpu #modal-challenge-countdown {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(0,0,0,.62);
+    background: #000;
   }
 
   body.low-gpu .bottom-nav {
@@ -1153,9 +1153,15 @@
 
   /* ── CHALLENGE COUNTDOWN ── */
   #modal-challenge-countdown {
-    background: rgba(0,0,0,.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: #000;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #screen-challenge.challenge-prestart {
+    background: #000;
+  }
+  #screen-challenge.challenge-prestart > * {
+    visibility: hidden;
   }
   .countdown-num {
     animation: countPop .5s cubic-bezier(.22,1,.36,1);
@@ -5327,7 +5333,7 @@ function showConfirm(title, msg, onOk, okLabel, onCancel, cancelLabel) {
 
 // Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m => {
-  if (m.id === 'modal-tiempo') return;
+  if (m.id === 'modal-tiempo' || m.id === 'modal-challenge-countdown') return;
   m.addEventListener('click', e => {
     if (e.target === m) closeModal(m.id);
   });
@@ -5601,8 +5607,13 @@ function confirmResetStats() {
 }
 
 function goStats() {
+  const statsScreen = document.getElementById('screen-stats');
+  if (statsScreen) statsScreen.scrollTop = 0;
   renderStats();
   showScreen('screen-stats');
+  requestAnimationFrame(() => {
+    if (statsScreen) statsScreen.scrollTop = 0;
+  });
 }
 
 // ── Build a single exam history card element ──
@@ -6099,6 +6110,12 @@ function startChallengeCountdown(mode) {
     DOM['challenge-progress'].style.background = 'linear-gradient(90deg,var(--danger),var(--accent2))';
   }
 
+  const challengeScreen = document.getElementById('screen-challenge');
+  if (challengeScreen) challengeScreen.classList.add('challenge-prestart');
+  if (DOM['challenge-q-num']) DOM['challenge-q-num'].innerHTML = '';
+  if (DOM['challenge-q-text']) DOM['challenge-q-text'].textContent = '';
+  if (DOM['challenge-answers']) DOM['challenge-answers'].innerHTML = '';
+
   showScreen('screen-challenge');
 
   const overlay = document.getElementById('modal-challenge-countdown');
@@ -6117,9 +6134,12 @@ function startChallengeCountdown(mode) {
   let i = 0;
   function showStep() {
     if (i >= steps.length) {
-      overlay.classList.remove('open');
       if (challengeMode === 'contrarreloj') startContrarrelojTimer();
       renderChallengeQuestion();
+      requestAnimationFrame(() => {
+        if (challengeScreen) challengeScreen.classList.remove('challenge-prestart');
+        overlay.classList.remove('open');
+      });
       return;
     }
     const s = steps[i++];
