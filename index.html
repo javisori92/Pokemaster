@@ -7248,6 +7248,58 @@ function _scheduleViewportFix(resetScroll, delay) {
   }, delay || 80);
 }
 
+let _questionModalFieldTimer = null;
+
+function _isQuestionModalOpen() {
+  const modal = document.getElementById('modal-question');
+  return !!(modal && modal.classList.contains('open'));
+}
+
+function _getQuestionModalSheet() {
+  const modal = document.getElementById('modal-question');
+  return modal ? modal.querySelector('.modal-sheet') : null;
+}
+
+function _isEditableField(el) {
+  if (!el || !(el instanceof HTMLElement)) return false;
+  if (el.matches('textarea, select')) return !el.disabled;
+  if (el.matches('input')) return el.type !== 'hidden' && !el.disabled;
+  return false;
+}
+
+function _ensureQuestionModalFieldVisible(field) {
+  if (!_isQuestionModalOpen() || !_isEditableField(field) || !document.contains(field)) return;
+  const sheet = _getQuestionModalSheet();
+  if (!sheet || !sheet.contains(field)) return;
+
+  const vv = window.visualViewport;
+  const fieldRect = field.getBoundingClientRect();
+  const sheetRect = sheet.getBoundingClientRect();
+  const viewportTop = vv ? vv.offsetTop : 0;
+  const viewportBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
+  const topLimit = Math.max(sheetRect.top + 12, viewportTop + 12);
+  const bottomLimit = Math.min(sheetRect.bottom - 12, viewportBottom - 12);
+
+  if (fieldRect.bottom > bottomLimit) {
+    sheet.scrollTop += fieldRect.bottom - bottomLimit;
+  } else if (fieldRect.top < topLimit) {
+    sheet.scrollTop -= topLimit - fieldRect.top;
+  }
+}
+
+function _scheduleQuestionModalFieldVisible(field) {
+  if (!_isEditableField(field)) return;
+  if (_questionModalFieldTimer) {
+    clearTimeout(_questionModalFieldTimer);
+    _questionModalFieldTimer = null;
+  }
+  _ensureQuestionModalFieldVisible(field);
+  _questionModalFieldTimer = setTimeout(() => {
+    _questionModalFieldTimer = null;
+    _ensureQuestionModalFieldVisible(field);
+  }, 150);
+}
+
 const POWER_SAVE_KEY = 'pokemaster_power_save';
 let _powerSaveForced = localStorage.getItem(POWER_SAVE_KEY) === '1';
 
@@ -7322,6 +7374,12 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+document.addEventListener('focusin', e => {
+  if (!_isQuestionModalOpen()) return;
+  if (!_isEditableField(e.target)) return;
+  _scheduleQuestionModalFieldVisible(e.target);
+});
+
 // Rotación o resize (también cubre apertura/cierre del teclado)
 window.addEventListener('resize', () => {
   _scheduleViewportFix(false, 50);
@@ -7342,6 +7400,9 @@ window.addEventListener('scroll', () => {
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
     _scheduleViewportFix(true, 70);
+    if (_isQuestionModalOpen() && _isEditableField(document.activeElement)) {
+      _scheduleQuestionModalFieldVisible(document.activeElement);
+    }
   }, { passive: true });
 }
 
