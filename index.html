@@ -98,7 +98,8 @@
 
   html {
     width: 100%;
-    height: 100%;
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
     margin: 0; padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
@@ -120,6 +121,8 @@
     position: fixed;
     inset: 0;
     width: 100%;
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
   }
   [data-theme="light"] body {
     background: linear-gradient(135deg, #c0d8f4 0%, #cce0f8 40%, #b8d0ec 100%);
@@ -240,7 +243,7 @@
 
   /* ── BOTTOM NAV — Pokémon game style ── */
   .bottom-nav {
-    position: absolute;
+    position: fixed;
     bottom: 0; left: 0; right: 0;
     width: 100%;
     z-index: 200;
@@ -815,6 +818,13 @@
     background: rgba(255,79,110,.1);
     border: 1px solid rgba(255,79,110,.3);
     color: var(--danger); display: block;
+  }
+
+  .study-wrong-list {
+    max-height: 180px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
   }
 
   /* ── EDITOR ── */
@@ -1807,7 +1817,7 @@
       <div class="lbl">Falladas</div>
     </div>
     <div class="result-item">
-      <div class="val" style="color:var(--accent);font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;" id="study-res-total">0</div>
+      <div class="val" style="color:var(--accent);" id="study-res-total">0</div>
       <div class="lbl">Total</div>
     </div>
   </div>
@@ -1819,7 +1829,7 @@
   </div>
   <div class="card" style="margin-bottom:20px;" id="study-res-phase-card">
     <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Áreas a mejorar</div>
-    <div id="study-res-wrong-list" style="font-size:13px;color:var(--text2);line-height:1.8;"></div>
+    <div id="study-res-wrong-list" class="study-wrong-list" style="font-size:13px;color:var(--text2);line-height:1.8;"></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="goHome()">Inicio</button>
@@ -4042,11 +4052,7 @@ function showStudyResults(perfect) {
   } else {
     phaseCard.style.display = '';
     const uniqueWrong = [...new Set(studyWrong.map(q => q.question))];
-    const top = uniqueWrong.slice(0, 6);
-    wrongList.innerHTML = top.map((txt, idx) => `${idx + 1}. ${esc(txt)}`).join('<br>');
-    if (uniqueWrong.length > top.length) {
-      wrongList.innerHTML += `<br><span style="color:var(--text3)">+${uniqueWrong.length - top.length} más…</span>`;
-    }
+    wrongList.innerHTML = uniqueWrong.map((txt, idx) => `${idx + 1}. ${esc(txt)}`).join('<br>');
   }
 
   showScreen('screen-study-result');
@@ -7087,6 +7093,7 @@ let _activeTouchCount = 0;
 let _blockTouchUntilRelease = false;
 let _touchSeq = 0;
 let _minTouchSeqAfterUiChange = 0;
+let _lastTouchEventAt = 0;
 
 function _markUiTransition() {
   _lastUIChangeAt = Date.now();
@@ -7096,6 +7103,7 @@ function _markUiTransition() {
 }
 
 document.addEventListener('touchend', function(e) {
+  _lastTouchEventAt = Date.now();
   _activeTouchCount = e.touches ? e.touches.length : 0;
 
   // If a screen changed while a finger was still down, ignore all touches
@@ -7133,6 +7141,7 @@ document.addEventListener('touchend', function(e) {
 document.addEventListener('touchstart', function(e) {
   // Record the timestamp of every new finger-down event
   _currentTouchStartAt = Date.now();
+  _lastTouchEventAt = _currentTouchStartAt;
   _touchSeq++;
   _activeTouchCount = e.touches ? e.touches.length : 1;
 
@@ -7145,6 +7154,7 @@ document.addEventListener('touchstart', function(e) {
 }, { passive: true });
 
 document.addEventListener('touchcancel', function(e) {
+  _lastTouchEventAt = Date.now();
   _activeTouchCount = e.touches ? e.touches.length : 0;
   if (_activeTouchCount === 0) _blockTouchUntilRelease = false;
 }, { passive: true });
@@ -7152,6 +7162,9 @@ document.addEventListener('touchcancel', function(e) {
 // Block delayed/native click events that can leak into the next screen
 // after a long press crossing a transition.
 document.addEventListener('click', function(e) {
+  const hasRecentTouchContext = (Date.now() - _lastTouchEventAt) < 1200;
+  if (!hasRecentTouchContext) return;
+
   if (_blockTouchUntilRelease || _currentTouchStartAt < _lastUIChangeAt || _touchSeq < _minTouchSeqAfterUiChange) {
     if (e.cancelable) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
