@@ -1824,7 +1824,7 @@
   <div class="card" style="margin-bottom:14px;" id="study-res-streak-card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:13px;color:var(--text2);">Mejor racha de aciertos</span>
-      <span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent4);" id="study-res-streak">0</span>
+      <span class="val" style="font-size:26px;color:var(--accent4);" id="study-res-streak">0</span>
     </div>
   </div>
   <div class="card" style="margin-bottom:20px;" id="study-res-phase-card">
@@ -4051,8 +4051,13 @@ function showStudyResults(perfect) {
     phaseCard.style.display = 'none';
   } else {
     phaseCard.style.display = '';
-    const uniqueWrong = [...new Set(studyWrong.map(q => q.question))];
-    wrongList.innerHTML = uniqueWrong.map((txt, idx) => `${idx + 1}. ${esc(txt)}`).join('<br>');
+    const uniqueWrong = [...new Map(studyWrong.map(q => [q.question, q])).values()];
+    wrongList.innerHTML = uniqueWrong.map((q, idx) => {
+      const correctIndex = Number.isInteger(q.correct) ? q.correct : parseInt(q.correct, 10);
+      const answers = [q.a, q.b, q.c, q.d];
+      const safeIndex = Number.isFinite(correctIndex) && correctIndex >= 0 && correctIndex < answers.length ? correctIndex : 0;
+      return `<div style="margin-bottom:10px;line-height:1.6;"><span style="color:var(--text);font-weight:600;">${idx + 1}. ${esc(q.question)}</span> <span style="color:var(--success);">${esc(answers[safeIndex] || '')}</span></div>`;
+    }).join('');
   }
 
   showScreen('screen-study-result');
