@@ -54,7 +54,6 @@
     --radius-lg: 20px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --keyboard-inset: 0px;
     /* Card glow effect */
     --glow-gold: 0 0 16px rgba(255,203,5,.25);
     --glow-red: 0 0 16px rgba(238,21,21,.25);
@@ -232,8 +231,6 @@
     transition: opacity .3s ease, transform .3s ease;
     background: linear-gradient(135deg, rgba(13,22,32,.85) 0%, rgba(10,15,26,.85) 100%);
     box-sizing: border-box;
-    scroll-padding-top: calc(var(--safe-top) + 20px);
-    scroll-padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px) + var(--keyboard-inset));
   }
   .screen.active {
     opacity: 1; pointer-events: all;
@@ -921,13 +918,10 @@
     border-top: 3px solid var(--accent2);
     border-bottom: none;
     padding: 20px 18px calc(var(--safe-bottom) + 24px);
-    margin-bottom: var(--keyboard-inset);
-    max-height: calc(var(--app-height, 100dvh) - 12px - var(--keyboard-inset)); overflow-y: auto;
+    max-height: 90vh; overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    scroll-padding-top: 16px;
-    scroll-padding-bottom: 16px;
     transform: translateY(100%);
-    transition: transform .3s cubic-bezier(.32,0,.67,0), margin-bottom .25s ease, max-height .25s ease;
+    transition: transform .3s cubic-bezier(.32,0,.67,0);
   }
   .modal-overlay.open .modal-sheet {
     transform: translateY(0);
@@ -7254,73 +7248,6 @@ function _scheduleViewportFix(resetScroll, delay) {
   }, delay || 80);
 }
 
-let _focusedEditable = null;
-let _ensureEditableTimers = [];
-
-function _getKeyboardInset() {
-  const vv = window.visualViewport;
-  if (!vv) return 0;
-  return Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
-}
-
-function _syncKeyboardInset() {
-  const inset = _getKeyboardInset();
-  document.documentElement.style.setProperty('--keyboard-inset', inset + 'px');
-  return inset;
-}
-
-function _isEditableElement(el) {
-  if (!el || !(el instanceof HTMLElement)) return false;
-  if (el.matches('textarea, select')) return !el.disabled;
-  if (el.matches('input')) {
-    return el.type !== 'hidden' && !el.disabled;
-  }
-  return false;
-}
-
-function _getEditableScrollContainer(el) {
-  return el ? el.closest('.modal-sheet, .screen') : null;
-}
-
-function _ensureEditableVisible(el) {
-  if (!_isEditableElement(el) || !document.contains(el)) return;
-  const container = _getEditableScrollContainer(el);
-  if (!container) return;
-
-  _syncKeyboardInset();
-  const vv = window.visualViewport;
-  const rect = el.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  const viewportTop = vv ? vv.offsetTop : 0;
-  const viewportBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
-  const topLimit = Math.max(containerRect.top + 12, viewportTop + 12);
-  const bottomLimit = Math.min(containerRect.bottom - 12, viewportBottom - 12);
-
-  if (rect.bottom > bottomLimit) {
-    container.scrollTop += rect.bottom - bottomLimit;
-  } else if (rect.top < topLimit) {
-    container.scrollTop -= topLimit - rect.top;
-  }
-}
-
-function _clearEnsureEditableTimers() {
-  _ensureEditableTimers.forEach(timer => clearTimeout(timer));
-  _ensureEditableTimers = [];
-}
-
-function _scheduleEnsureEditableVisible(el) {
-  if (!_isEditableElement(el)) return;
-  _focusedEditable = el;
-  _clearEnsureEditableTimers();
-
-  [0, 120, 260].forEach(delay => {
-    const timer = setTimeout(() => {
-      if (_focusedEditable === el) _ensureEditableVisible(el);
-    }, delay);
-    _ensureEditableTimers.push(timer);
-  });
-}
-
 const POWER_SAVE_KEY = 'pokemaster_power_save';
 let _powerSaveForced = localStorage.getItem(POWER_SAVE_KEY) === '1';
 
@@ -7395,21 +7322,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-document.addEventListener('focusin', e => {
-  if (!_isEditableElement(e.target)) return;
-  _scheduleEnsureEditableVisible(e.target);
-});
-
-document.addEventListener('focusout', e => {
-  if (e.target !== _focusedEditable) return;
-  setTimeout(() => {
-    if (_isEditableElement(document.activeElement)) return;
-    _focusedEditable = null;
-    _clearEnsureEditableTimers();
-    _syncKeyboardInset();
-  }, 0);
-});
-
 // Rotación o resize (también cubre apertura/cierre del teclado)
 window.addEventListener('resize', () => {
   _scheduleViewportFix(false, 50);
@@ -7430,12 +7342,6 @@ window.addEventListener('scroll', () => {
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
     _scheduleViewportFix(true, 70);
-    if (_focusedEditable) _scheduleEnsureEditableVisible(_focusedEditable);
-  }, { passive: true });
-
-  window.visualViewport.addEventListener('scroll', () => {
-    _syncKeyboardInset();
-    if (_focusedEditable) _ensureEditableVisible(_focusedEditable);
   }, { passive: true });
 }
 
