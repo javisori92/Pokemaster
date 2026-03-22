@@ -897,7 +897,7 @@
     transition: opacity .2s;
   }
   .q-editor-actions button:active { opacity: .7; }
-  .btn-edit-q { background: rgba(238,21,21,.15); color: var(--accent); }
+  .btn-edit-q { background: rgba(61,124,255,.18); color: var(--accent3); }
   .btn-del-q { background: rgba(255,79,110,.15); color: var(--danger); }
 
   /* ── MODAL ── */
@@ -5283,6 +5283,13 @@ function openModal(id) {
   _markUiTransition();
   m.classList.add('open');
   document.body.style.overflow = 'hidden';
+  if (id === 'modal-question') {
+    _clearQuestionModalFieldTimers();
+    _questionModalActiveField = null;
+    _questionModalKeyboardOpen = false;
+    const sheet = _getQuestionModalSheet();
+    _questionModalBaseScrollTop = sheet ? sheet.scrollTop : 0;
+  }
 }
 
 function closeModal(id) {
@@ -5306,6 +5313,11 @@ function closeModal(id) {
   };
   requestAnimationFrame(restoreViewport);
   setTimeout(restoreViewport, 260);
+  if (id === 'modal-question') {
+    _clearQuestionModalFieldTimers();
+    _questionModalActiveField = null;
+    _questionModalKeyboardOpen = false;
+  }
 }
 
 function showConfirm(title, msg, onOk, okLabel, onCancel, cancelLabel) {
@@ -7248,7 +7260,10 @@ function _scheduleViewportFix(resetScroll, delay) {
   }, delay || 80);
 }
 
-let _questionModalFieldTimer = null;
+let _questionModalFieldTimers = [];
+let _questionModalBaseScrollTop = 0;
+let _questionModalKeyboardOpen = false;
+let _questionModalActiveField = null;
 
 function _isQuestionModalOpen() {
   const modal = document.getElementById('modal-question');
@@ -7267,18 +7282,43 @@ function _isEditableField(el) {
   return false;
 }
 
+function _questionModalKeyboardOverlap() {
+  const vv = window.visualViewport;
+  if (!vv) return 0;
+  return Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
+}
+
+function _isQuestionModalKeyboardOpen() {
+  return _questionModalKeyboardOverlap() > 70;
+}
+
+function _clearQuestionModalFieldTimers() {
+  _questionModalFieldTimers.forEach(t => clearTimeout(t));
+  _questionModalFieldTimers = [];
+}
+
+function _restoreQuestionModalScroll() {
+  const sheet = _getQuestionModalSheet();
+  if (!sheet) return;
+  sheet.scrollTop = Math.max(0, _questionModalBaseScrollTop);
+}
+
 function _ensureQuestionModalFieldVisible(field) {
   if (!_isQuestionModalOpen() || !_isEditableField(field) || !document.contains(field)) return;
   const sheet = _getQuestionModalSheet();
   if (!sheet || !sheet.contains(field)) return;
+
+  const keyboardOpen = _isQuestionModalKeyboardOpen();
+  _questionModalKeyboardOpen = keyboardOpen;
+  if (!keyboardOpen) return;
 
   const vv = window.visualViewport;
   const fieldRect = field.getBoundingClientRect();
   const sheetRect = sheet.getBoundingClientRect();
   const viewportTop = vv ? vv.offsetTop : 0;
   const viewportBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
-  const topLimit = Math.max(sheetRect.top + 12, viewportTop + 12);
-  const bottomLimit = Math.min(sheetRect.bottom - 12, viewportBottom - 12);
+  const topLimit = Math.max(sheetRect.top + 10, viewportTop + 10);
+  const bottomLimit = Math.min(sheetRect.bottom - 8, viewportBottom - 8);
 
   if (fieldRect.bottom > bottomLimit) {
     sheet.scrollTop += fieldRect.bottom - bottomLimit;
@@ -7289,15 +7329,22 @@ function _ensureQuestionModalFieldVisible(field) {
 
 function _scheduleQuestionModalFieldVisible(field) {
   if (!_isEditableField(field)) return;
-  if (_questionModalFieldTimer) {
-    clearTimeout(_questionModalFieldTimer);
-    _questionModalFieldTimer = null;
+  if (!_isQuestionModalOpen()) return;
+  const sheet = _getQuestionModalSheet();
+  if (!sheet || !sheet.contains(field)) return;
+
+  _questionModalActiveField = field;
+  if (!_questionModalKeyboardOpen) {
+    _questionModalBaseScrollTop = sheet.scrollTop;
   }
+  _clearQuestionModalFieldTimers();
   _ensureQuestionModalFieldVisible(field);
-  _questionModalFieldTimer = setTimeout(() => {
-    _questionModalFieldTimer = null;
-    _ensureQuestionModalFieldVisible(field);
-  }, 150);
+  [70, 170, 300, 460].forEach(delay => {
+    const timer = setTimeout(() => {
+      if (_questionModalActiveField === field) _ensureQuestionModalFieldVisible(field);
+    }, delay);
+    _questionModalFieldTimers.push(timer);
+  });
 }
 
 const POWER_SAVE_KEY = 'pokemaster_power_save';
@@ -7380,6 +7427,20 @@ document.addEventListener('focusin', e => {
   _scheduleQuestionModalFieldVisible(e.target);
 });
 
+document.addEventListener('focusout', e => {
+  if (!_isQuestionModalOpen()) return;
+  if (e.target !== _questionModalActiveField) return;
+  setTimeout(() => {
+    if (_isEditableField(document.activeElement)) return;
+    _questionModalActiveField = null;
+    _clearQuestionModalFieldTimers();
+    if (!_isQuestionModalKeyboardOpen()) {
+      _questionModalKeyboardOpen = false;
+      _restoreQuestionModalScroll();
+    }
+  }, 40);
+});
+
 // Rotación o resize (también cubre apertura/cierre del teclado)
 window.addEventListener('resize', () => {
   _scheduleViewportFix(false, 50);
@@ -7400,8 +7461,22 @@ window.addEventListener('scroll', () => {
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
     _scheduleViewportFix(true, 70);
-    if (_isQuestionModalOpen() && _isEditableField(document.activeElement)) {
-      _scheduleQuestionModalFieldVisible(document.activeElement);
+    if (!_isQuestionModalOpen()) return;
+
+    const keyboardNowOpen = _isQuestionModalKeyboardOpen();
+    if (keyboardNowOpen) {
+      _questionModalKeyboardOpen = true;
+      if (_isEditableField(document.activeElement)) {
+        _scheduleQuestionModalFieldVisible(document.activeElement);
+      }
+      return;
+    }
+
+    if (_questionModalKeyboardOpen) {
+      _questionModalKeyboardOpen = false;
+      _clearQuestionModalFieldTimers();
+      requestAnimationFrame(_restoreQuestionModalScroll);
+      setTimeout(_restoreQuestionModalScroll, 140);
     }
   }, { passive: true });
 }
