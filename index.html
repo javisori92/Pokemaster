@@ -87,6 +87,7 @@
     --glow-gold: 0 0 0 transparent;
     --glow-red: 0 0 0 transparent;
     --glow-blue: 0 0 0 transparent;
+    --modal-overlay-bg: rgba(0,0,0,0.5);
   }
 
   /* Theme transition */
@@ -276,14 +277,17 @@
   .nav-btn svg { width: 22px; height: 22px; margin-bottom: 2px; }
   .nav-btn.active { color: var(--accent2); }
   .nav-btn.active svg { filter: drop-shadow(0 0 8px rgba(255,203,5,.9)); }
-  .nav-btn.active::before {
+  .nav-btn::before {
     content: '';
     position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
     width: 32px; height: 3px;
     background: var(--accent2);
     border-radius: 0 0 6px 6px;
     box-shadow: 0 0 12px rgba(255,203,5,.8);
+    opacity: 0;
+    transition: opacity .2s ease;
   }
+  .nav-btn.active::before { opacity: 1; }
 
   /* ── GENERIC CARD ── */
   .card {
@@ -309,6 +313,10 @@
     user-select: none; -webkit-user-select: none;
   }
   .btn:active { transform: scale(0.97); opacity: .85; }
+  .btn:focus-visible, .answer-opt:focus-visible, .chip:focus-visible,
+  .mode-card:focus-visible, .mode-subopt:focus-visible, .back-btn:focus-visible {
+    outline: 2px solid var(--accent2); outline-offset: 2px;
+  }
 
   /* ── BUTTONS — RPG game style ── */
   .btn { font-family: 'Bangers', cursive !important; letter-spacing: 1.5px; font-size: 16px !important; }
@@ -409,6 +417,7 @@
     background: rgba(255,203,5,.15);
     border-color: var(--accent2); color: var(--accent2);
   }
+  .chip:active { transform: scale(0.96); }
   .chips-wrap {
     display: flex; flex-wrap: wrap; gap: 8px;
     margin-bottom: 14px;
@@ -540,6 +549,12 @@
     flex: 1; min-width: 0;
   }
   .settings-icon { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; line-height: 1; }
+  .settings-icon-wrap {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
   .settings-label { font-size: 15px; font-weight: 500; color: var(--text); }
   .settings-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
   .settings-divider { height: 1px; background: var(--border); margin: 0 16px; }
@@ -903,7 +918,7 @@
   /* ── MODAL ── */
   .modal-overlay {
     position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
+    background: var(--modal-overlay-bg, rgba(0,0,0,.75)); backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     display: flex; align-items: flex-end;
     opacity: 0; pointer-events: none;
@@ -917,8 +932,7 @@
     border: 2px solid var(--border);
     border-top: 3px solid var(--accent2);
     border-bottom: none;
-    padding: 20px 18px 20px 18px;
-    padding-bottom: calc(110px + var(--safe-bottom));
+    padding: 20px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px;
     max-height: 90vh; overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     transform: translateY(100%);
@@ -927,6 +941,10 @@
   .modal-overlay.open .modal-sheet {
     transform: translateY(0);
     transition: transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  /* Question editor needs extra room for its fixed button bar */
+  #modal-question .modal-sheet {
+    padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
   }
   .modal-question-buttons {
     position: fixed; bottom: calc(var(--safe-bottom) + 10px); left: 18px; right: 18px;
@@ -1476,10 +1494,10 @@
   <div class="q-card" id="fc-card" style="cursor:pointer;user-select:none;-webkit-user-select:none;" onclick="fcReveal()">
     <div class="q-num" id="fc-num"></div>
     <div class="q-text" id="fc-question"></div>
-    <div id="fc-hint" style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center;">¿La sabes? ¡Toca para ver!</div>
+    <div id="fc-hint" style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center;line-height:1.6;">¿La sabes? ¡Toca para ver!</div>
     <div id="fc-answer" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
       <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Respuesta correcta</div>
-      <div id="fc-answer-text" style="font-size:15px;font-weight:600;color:var(--success);"></div>
+      <div id="fc-answer-text" style="font-size:15px;font-weight:600;color:var(--success);word-break:break-word;"></div>
     </div>
   </div>
   <div id="fc-actions" style="display:none;margin-top:12px;">
@@ -1672,6 +1690,13 @@
 
     <div id="custom-sel-list"></div>
 
+    <div id="exam-config-info" class="card" style="margin-bottom:14px;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--text2);">Preguntas seleccionadas</span>
+        <span class="inline-num" id="exam-config-count">0</span>
+      </div>
+    </div>
+
     <div class="section-title">Cantidad de preguntas</div>
     <div class="card" style="margin-bottom:14px;">
       <div style="display:flex;gap:8px;margin-bottom:12px;">
@@ -1854,7 +1879,7 @@
   <div class="card" style="margin-bottom:14px;" id="study-res-streak-card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:13px;color:var(--text2);">Mejor racha de aciertos</span>
-      <span class="val" style="font-size:26px;color:var(--accent4);" id="study-res-streak">0</span>
+      <span class="val" style="font-size:26px;color:var(--accent4);font-family:'Bangers',cursive;letter-spacing:1px;" id="study-res-streak">0</span>
     </div>
   </div>
   <div class="card" style="margin-bottom:20px;" id="study-res-phase-card">
@@ -2859,6 +2884,9 @@ function closeModeExpandPanels() {
 
 function goHome() {
   stopTimer();
+  stopExtremoPerQTimer();
+  if (challengeTotalTimerInterval) { clearInterval(challengeTotalTimerInterval); challengeTotalTimerInterval = null; }
+  if (_challengeStatsFlushTimer) { clearTimeout(_challengeStatsFlushTimer); _challengeStatsFlushTimer = null; }
   updateHomeStats();
   closeModeExpandPanels();
   showScreen('screen-home');
@@ -2951,9 +2979,8 @@ function updateHomeStats() {
 function calcStreak(st) {
   if (!st.activityDays || st.activityDays.length === 0) return 0;
   const now = new Date();
-  const utc1Date = new Date(now.getTime() + 60 * 60 * 1000); // UTC+1
-  const today = utc1Date.toISOString().slice(0,10);
-  const yesterday = new Date(utc1Date.getTime() - 86400000).toISOString().slice(0,10);
+  const today = now.toLocaleDateString('sv-SE'); // ISO YYYY-MM-DD using local timezone
+  const yesterday = new Date(now.getTime() - 86400000).toLocaleDateString('sv-SE');
   const days = [...new Set(st.activityDays)].sort().reverse();
   if (days[0] !== today && days[0] !== yesterday) return 0;
   let streak = 1;
@@ -2969,8 +2996,7 @@ function calcStreak(st) {
 
 function recordActivity(st) {
   const now = new Date();
-  const utc1Date = new Date(now.getTime() + 60 * 60 * 1000); // UTC+1
-  const today = utc1Date.toISOString().slice(0,10);
+  const today = now.toLocaleDateString('sv-SE'); // ISO YYYY-MM-DD using local timezone
   if (!st.activityDays) st.activityDays = [];
   if (!st.activityDays.includes(today)) st.activityDays.push(today);
   // Keep last 365 days only
@@ -3060,7 +3086,7 @@ function renderSelectionList(containerId, sel, cats, onChange) {
       <div class="sel-cat-toggle ${allOn ? 'on' : partialOn ? 'partial' : ''}">
         ${catSel.selected ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg>' : ''}
       </div>
-      <div class="sel-cat-name">${cat}</div>
+      <div class="sel-cat-name">${esc(cat)}</div>
       <div class="sel-cat-count">${catSel.selected ? selCount+'/'+totalCount : totalCount+' preg.'}</div>
     `;
     
@@ -3095,7 +3121,7 @@ function renderSelectionList(containerId, sel, cats, onChange) {
             subRow.className = 'sel-subcat-row on';
             subRow.innerHTML = `
               <div class="sel-subcat-toggle on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg></div>
-              <div class="sel-subcat-name">${label}</div>
+              <div class="sel-subcat-name">${esc(label)}</div>
               <div class="sel-subcat-count">${subCount}</div>
             `;
             subRow.onclick = (e) => {
@@ -3142,7 +3168,7 @@ function renderSelectionList(containerId, sel, cats, onChange) {
           <div class="sel-subcat-toggle ${isOn ? 'on' : ''}">
             ${isOn ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg>' : ''}
           </div>
-          <div class="sel-subcat-name">${label}</div>
+          <div class="sel-subcat-name">${esc(label)}</div>
           <div class="sel-subcat-count">${subCount}</div>
         `;
         subRow.onclick = (e) => {
@@ -3717,6 +3743,7 @@ function goBackToResults() {
 }
 
 function startTimer(sec) {
+  stopTimer(); // prevent double interval if called while a timer is already running
   let remaining = sec;
   const el = DOM['exam-timer'];
   el.style.display = '';
@@ -3904,6 +3931,7 @@ let studyOriginalPool = [];
 let studyOriginalBadge = '';
 
 function launchStudy(pool, badgeText) {
+  if (!pool || pool.length === 0) { showToast('No hay preguntas disponibles', 'error'); return; }
   studyPhase = 'all';
   studyOriginalPool = [...pool];
   studyOriginalBadge = badgeText;
@@ -5291,10 +5319,11 @@ function parseCSVRow(line) {
 
 function clearAllData() {
   closeModal('modal-ie');
-  showConfirm('¿Borrar todos los datos?', 'Se eliminarán todas las preguntas. Esta acción no se puede deshacer.', () => {
+  showConfirm('¿Borrar todos los datos?', 'Se eliminarán todas las preguntas y estadísticas. Esta acción no se puede deshacer.', () => {
     db = { questions: [] };
     invalidateQuestionIndex();
     saveDB();
+    try { localStorage.removeItem(STATS_KEY); } catch(e) {}
     showToast('Datos eliminados', 'success');
     renderEditorHome();
     updateHomeStats();
@@ -5854,7 +5883,7 @@ function renderStudyHistorySection(st) {
 
 function goStudyHistory() {
   const st = loadStats();
-  const history = (st.studyHistory || []).slice(-30).reverse();
+  const history = (st.studyHistory || []).slice().reverse();
   const list = document.getElementById('study-history-full-list');
   const countEl = document.getElementById('study-history-count');
   list.innerHTML = '';
@@ -6123,6 +6152,8 @@ function goChallenge() {
 function startChallengeCountdown(mode) {
   challengeMode = mode || 'normal';
   closeModal('modal-challenge-intro');
+  stopExtremoPerQTimer();
+  if (challengeTotalTimerInterval) { clearInterval(challengeTotalTimerInterval); challengeTotalTimerInterval = null; }
   resetChallengeStatsBuffer();
 
   challengeQueue = buildChallengeQueue(0);
@@ -6197,6 +6228,7 @@ function startChallengeCountdown(mode) {
       requestAnimationFrame(() => {
         if (challengeScreen) challengeScreen.classList.remove('challenge-prestart');
         overlay.classList.remove('open');
+        textEl.style.textShadow = ''; // clear glow after countdown ends
       });
       return;
     }
@@ -6376,7 +6408,7 @@ function challengeAnswer(i) {
   if (Date.now() - _qRenderedAt < 350) return;
   const q = challengeQueue[challengeIndex];
   const opts = document.querySelectorAll('#challenge-answers .answer-opt');
-  opts.forEach(o => o.onclick = null);
+  opts.forEach(o => { o.onclick = null; o.classList.add('disabled'); });
   if (challengeMode === 'extremo') stopExtremoPerQTimer();
 
   if (i === q.opts.correct) {
@@ -6765,7 +6797,8 @@ function fcReveal() {
   if (DOM['fc-answer'].style.display !== 'none') return;
   const q = fcQueue[fcIndex];
   const letters = ['A','B','C','D'];
-  DOM['fc-answer-text'].textContent = `${letters[q.correct ?? q.opts?.correct ?? 0]}) ${q[['a','b','c','d'][q.correct ?? q.opts?.correct ?? 0]]}`;
+  const ci = Math.max(0, Math.min(q.correct ?? q.opts?.correct ?? 0, 3));
+  DOM['fc-answer-text'].textContent = `${letters[ci]}) ${q[['a','b','c','d'][ci]]}`;
   DOM['fc-hint'].style.display = 'none';
   DOM['fc-answer'].style.display = '';
   DOM['fc-actions'].style.display = '';
@@ -6774,6 +6807,16 @@ function fcReveal() {
 function fcAnswer(knew) {
   if (knew) { fcKnown++; playSound('correct'); }
   else { fcUnknown++; playSound('wrong'); }
+  // Record per-question statistics so flashcard sessions appear in error review and hardest lists
+  const q = fcQueue[fcIndex];
+  if (q) {
+    const st = loadStats();
+    if (!st.questions[q.id]) st.questions[q.id] = { correct: 0, wrong: 0, text: q.question, cat: q.cat, subcat: q.subcat || '' };
+    if (knew) st.questions[q.id].correct++;
+    else st.questions[q.id].wrong++;
+    st.questions[q.id].lastSeen = Date.now();
+    saveStats(st);
+  }
   fcIndex++;
   if (fcIndex >= fcQueue.length) {
     // Show results
@@ -6801,6 +6844,8 @@ function confirmExitFlashcard() {
 let _errorPeriodDays = null; // null = all time
 
 function goErrorReview() {
+  _errorPeriodDays = null;
+  document.querySelectorAll('#error-review-filters .sort-chip').forEach((b, i) => b.classList.toggle('active', i === 0));
   renderErrorReview();
   showScreen('screen-error-review');
 }
@@ -6836,7 +6881,10 @@ function renderErrorReview() {
   }
   list.style.display = '';
   empty.style.display = 'none';
-  count.textContent = `${errored.length} pregunta${errored.length===1?'':'s'}`;
+  const displayCount = Math.min(errored.length, 50);
+  count.textContent = errored.length > 50
+    ? `Mostrando ${displayCount} de ${errored.length} preguntas`
+    : `${errored.length} pregunta${errored.length===1?'':'s'}`;
 
   errored.slice(0, 50).forEach(([id, qSt]) => {
     const dbQ = db.questions.find(q => q.id === id);
@@ -7524,6 +7572,7 @@ window.addEventListener('pageshow', _stabilizeViewportOnOpen);
 // Cuando el usuario vuelve a la pestaña/app tras minimizarla
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
+    saveDBNow();
     flushChallengeQuestionStats();
     // Pause all active timers to prevent CPU/battery drain in background
     stopTimer();
@@ -7695,8 +7744,8 @@ window.addEventListener('appinstalled', () => {
 // ═══════════════════════════════════════════
 const CACHE_NAME = 'pokemaster-v1';
 const ASSETS = [
-  // The app itself — injected at registration time
-  self.__APP_URL__ || '/',
+  // The app itself — URL injected at registration time
+  ${JSON.stringify(location.href)},
   'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
   'https://fonts.gstatic.com',
 ];
@@ -7746,8 +7795,6 @@ self.addEventListener('fetch', e => {
   navigator.serviceWorker.register(swUrl, { scope: './' })
     .then(reg => {
       console.info('PokéMaster SW registered', reg.scope);
-      // Store app URL in SW for caching
-      if (reg.active) reg.active.postMessage({ appUrl: location.href });
     })
     .catch(err => console.warn('PokéMaster SW registration failed:', err));
 })();
