@@ -917,7 +917,8 @@
     border: 2px solid var(--border);
     border-top: 3px solid var(--accent2);
     border-bottom: none;
-    padding: 20px 18px calc(var(--safe-bottom) + 24px);
+    padding: 20px 18px 20px 18px;
+    padding-bottom: calc(110px + var(--safe-bottom));
     max-height: 90vh; overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     transform: translateY(100%);
@@ -927,6 +928,29 @@
     transform: translateY(0);
     transition: transform .35s cubic-bezier(.22,1,.36,1);
   }
+  .modal-question-buttons {
+    position: fixed; bottom: calc(var(--safe-bottom) + 10px); left: 18px; right: 18px;
+    z-index: 210; display: flex; gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--poke-navy) 0%, rgba(30,20,60,.8) 100%);
+    border: 2px solid var(--accent2);
+    border-radius: 16px;
+    box-shadow: 0 -4px 24px rgba(255,215,0,.15), inset 0 1px 0 rgba(255,255,255,.1);
+    animation: slideUp .35s cubic-bezier(.22,1,.36,1);
+    backdrop-filter: blur(8px);
+  }
+  .modal-question-buttons.hide {
+    animation: slideDown .25s cubic-bezier(.32,0,.67,0);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(120px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes slideDown {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(120px); opacity: 0; }
+  }
+  .modal-question-buttons .btn { flex: 1; }
   .modal-handle {
     width: 36px; height: 4px; border-radius: 2px;
     background: var(--accent2); opacity: .4; margin: 0 auto 18px;
@@ -2406,11 +2430,13 @@
         <option value="3">D</option>
       </select>
     </div>
-    <div class="btn-row" style="margin-top:4px;">
-      <button class="btn btn-secondary" onclick="closeModal('modal-question')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveQuestion()">Guardar</button>
-    </div>
   </div>
+</div>
+
+<!-- ═══ MODAL QUESTION BUTTONS (Fixed at bottom) ═══ -->
+<div class="modal-question-buttons" id="modal-question-buttons" style="display:none;">
+  <button class="btn btn-secondary" onclick="closeModal('modal-question')">Cancelar</button>
+  <button class="btn btn-primary" onclick="saveQuestion()">Guardar</button>
 </div>
 
 <!-- ═══ MODAL: IMPORT/EXPORT ═══ -->
@@ -5289,6 +5315,12 @@ function openModal(id) {
     _questionModalKeyboardOpen = false;
     const sheet = _getQuestionModalSheet();
     _questionModalBaseScrollTop = sheet ? sheet.scrollTop : 0;
+    // Show the buttons at the bottom
+    const buttonsEl = document.getElementById('modal-question-buttons');
+    if (buttonsEl) {
+      buttonsEl.style.display = 'flex';
+      buttonsEl.classList.remove('hide');
+    }
   }
 }
 
@@ -5311,12 +5343,18 @@ function closeModal(id) {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   };
-  requestAnimationFrame(restoreViewport);
-  setTimeout(restoreViewport, 260);
+  _scheduleScrollDriftReset();
+  setTimeout(() => { restoreViewport(); _scheduleAppHeightSync(); }, 310);
   if (id === 'modal-question') {
     _clearQuestionModalFieldTimers();
     _questionModalActiveField = null;
     _questionModalKeyboardOpen = false;
+    // Hide the buttons at the bottom
+    const buttonsEl = document.getElementById('modal-question-buttons');
+    if (buttonsEl) {
+      buttonsEl.classList.add('hide');
+      setTimeout(() => { buttonsEl.style.display = 'none'; }, 250);
+    }
   }
 }
 
@@ -5350,6 +5388,14 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
     if (e.target === m) closeModal(m.id);
   });
 });
+
+// Close modal-question when tapping the top handle area
+const questionModalHandle = document.querySelector('#modal-question .modal-handle');
+if (questionModalHandle) {
+  questionModalHandle.addEventListener('click', () => {
+    closeModal('modal-question');
+  });
+}
 
 // ══════════════════════════════════════════════
 //  TOAST
@@ -7238,6 +7284,22 @@ function _fixAppHeight() {
   _syncNavBottom();
 }
 
+function _scheduleAppHeightSync(delay = 0) {
+  if (_appHeightSyncTimer) clearTimeout(_appHeightSyncTimer);
+  _appHeightSyncTimer = setTimeout(() => {
+    _appHeightSyncTimer = null;
+    _fixAppHeight();
+  }, delay);
+}
+
+function _scheduleScrollDriftReset() {
+  if (_scrollDriftRaf) return;
+  _scrollDriftRaf = requestAnimationFrame(() => {
+    _scrollDriftRaf = null;
+    _resetScrollDrift();
+  });
+}
+
 // ── iOS visual-viewport nav anchor ──────────────────────────────────────────
 // Maintains the nav's bottom edge exactly at the visible screen boundary,
 // compensating for any gap between layout viewport and visual viewport
@@ -7254,6 +7316,8 @@ function _syncNavBottom() {
 let _stableAppHeight = 0; // populated on first _setKeyboardOpen / _applyViewportFix
 let _keyboardOpen = false;
 let _keyboardStateTimer = null;
+let _appHeightSyncTimer = null;
+let _scrollDriftRaf = null;
 
 function _setKeyboardOpen(open) {
   _keyboardOpen = !!open;
