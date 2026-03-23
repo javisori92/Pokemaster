@@ -2504,6 +2504,10 @@ let db = { questions: [] };
 function markSetupDone() {
   try { localStorage.setItem(SETUP_DONE_KEY, '1'); } catch(e) {}
 }
+  body.keyboard-open .bottom-nav {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 
 function hasSetupDone() {
   try {
@@ -7225,12 +7229,66 @@ document.addEventListener('click', function(e) {
 //  2. Forzar window.scrollTo(0,0) en cada 'pageshow' y 'visibilitychange'.
 //  3. También en el resize del visualViewport (teclado).
 
-function _fixAppHeight() {
+function _getViewportHeight() {
   const vv = window.visualViewport;
-  const candidates = [window.innerHeight, document.documentElement.clientHeight];
-  if (vv) candidates.push(Math.round(vv.height + vv.offsetTop));
-  const h = Math.max(...candidates.filter(n => Number.isFinite(n) && n > 0));
+  const vvHeight = vv ? Math.round(vv.height + vv.offsetTop) : 0;
+  const docHeight = document.documentElement ? document.documentElement.clientHeight : 0;
+  return Math.max(window.innerHeight || 0, vvHeight, docHeight, 320);
+}
+
+function _fixAppHeight() {
+  const h = _keyboardOpen ? _stableAppHeight : _getViewportHeight();
   document.documentElement.style.setProperty('--app-height', Math.max(h, 320) + 'px');
+  _syncNavBottom();
+}
+
+// ── iOS visual-viewport nav anchor ──────────────────────────────────────────
+// Maintains the nav's bottom edge exactly at the visible screen boundary,
+// compensating for any gap between layout viewport and visual viewport
+// (e.g. Safari toolbar, scroll drift in PWA mode).
+function _syncNavBottom() {
+  const nav = document.getElementById('bottom-nav');
+  if (!nav || _keyboardOpen) return;
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const offset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+  nav.style.bottom = offset > 0 ? offset + 'px' : '';
+}
+
+let _stableAppHeight = 0; // populated on first _setKeyboardOpen / _applyViewportFix
+let _keyboardOpen = false;
+let _keyboardStateTimer = null;
+
+function _setKeyboardOpen(open) {
+  _keyboardOpen = !!open;
+  document.body.classList.toggle('keyboard-open', _keyboardOpen);
+  if (!_keyboardOpen) _stableAppHeight = _getViewportHeight();
+  _fixAppHeight();
+}
+
+function _isKeyboardEditable(el) {
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  if (el.tagName !== 'INPUT') return !!el.isContentEditable;
+  const type = (el.type || 'text').toLowerCase();
+  return !['button','checkbox','color','file','hidden','image','radio','range','reset','submit'].includes(type);
+}
+
+function _updateKeyboardViewportState() {
+  const active = document.activeElement;
+  const hasEditableFocus = _isKeyboardEditable(active);
+  const vv = window.visualViewport;
+  const vvHeight = vv ? vv.height : window.innerHeight;
+  const keyboardDelta = Math.max(0, _getViewportHeight() - vvHeight);
+  const keyboardLikelyOpen = hasEditableFocus && keyboardDelta > 120;
+
+  if (keyboardLikelyOpen) {
+    _stableAppHeight = Math.max(_stableAppHeight, _getViewportHeight());
+    _setKeyboardOpen(true);
+    return;
+  }
+
+  _setKeyboardOpen(false);
 }
 
 function _resetScrollDrift() {
@@ -7240,7 +7298,9 @@ function _resetScrollDrift() {
 }
 
 function _applyViewportFix() {
-  _fixAppHeight();
+  // On page open / return-from-background: reset keyboard state and sync height.
+  _stableAppHeight = _getViewportHeight();
+  _setKeyboardOpen(false);
   requestAnimationFrame(_resetScrollDrift);
 }
 
@@ -7422,12 +7482,23 @@ document.addEventListener('visibilitychange', () => {
 });
 
 document.addEventListener('focusin', e => {
+  // Global: detectar apertura del teclado para ocultar nav y congelar altura
+  if (_keyboardStateTimer) clearTimeout(_keyboardStateTimer);
+  _keyboardStateTimer = setTimeout(_updateKeyboardViewportState, 60);
+  // Modal scroll: mantener el campo activo visible mientras el teclado está abierto
   if (!_isQuestionModalOpen()) return;
   if (!_isEditableField(e.target)) return;
   _scheduleQuestionModalFieldVisible(e.target);
 });
 
 document.addEventListener('focusout', e => {
+  // Global: detectar cierre del teclado para restaurar nav y altura
+  if (_keyboardStateTimer) clearTimeout(_keyboardStateTimer);
+  _keyboardStateTimer = setTimeout(() => {
+    _updateKeyboardViewportState();
+    if (!_keyboardOpen) requestAnimationFrame(_resetScrollDrift);
+  }, 180);
+  // Modal scroll: restaurar posición al cerrar teclado
   if (!_isQuestionModalOpen()) return;
   if (e.target !== _questionModalActiveField) return;
   setTimeout(() => {
@@ -7457,10 +7528,14 @@ window.addEventListener('scroll', () => {
   if (window.scrollY !== 0) _resetScrollDrift();
 }, { passive: true });
 
-// visualViewport: teclado iOS
+// visualViewport: teclado iOS + anclaje del nav al borde inferior visible
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
+    // 1. Estado global de teclado (oculta nav, congela --app-height)
+    _updateKeyboardViewportState();
+    // 2. Sync de altura y nav bottom después del debounce del navegador
     _scheduleViewportFix(true, 70);
+    // 3. Scroll del modal para mantener el campo activo visible
     if (!_isQuestionModalOpen()) return;
 
     const keyboardNowOpen = _isQuestionModalKeyboardOpen();
@@ -7478,6 +7553,10 @@ if (window.visualViewport) {
       requestAnimationFrame(_restoreQuestionModalScroll);
       setTimeout(_restoreQuestionModalScroll, 140);
     }
+  }, { passive: true });
+  // scroll del visual viewport (scroll drift iOS Safari — reancla el nav)
+  window.visualViewport.addEventListener('scroll', () => {
+    if (!_keyboardOpen) _syncNavBottom();
   }, { passive: true });
 }
 
